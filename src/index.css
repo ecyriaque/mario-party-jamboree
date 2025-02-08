@@ -1,3 +1,21 @@
+@font-face {
+  font-family: "Shin Go";
+  src: url("/fonts/AOTFShinGoProRegular.otf") format("opentype");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Shin Go";
+  src: url("/fonts/AOTFShinGoProBold.otf") format("opentype");
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: "Shin Go";
+  src: url("/fonts/AOTFShinGoProLight.otf") format("opentype");
+  font-weight: 300;
+}
+
 html,
 body,
 #root {
@@ -6,7 +24,7 @@ body,
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  font-family: "Arial", sans-serif;
+  font-family: "Shin Go", sans-serif;
   background-color: black;
 }
 
