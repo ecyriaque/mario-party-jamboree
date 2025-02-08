@@ -11,11 +11,17 @@ const RandomBoardSelector = () => {
   };
 
   return (
-    <div className="random-board-selector">
-      <button onClick={handleSelectRandomBoard} className="random-button">
-        Choose a Random Board
-      </button>
-      {selectedBoard && <BoardCard board={selectedBoard} />}
+    <div className="random-board-container">
+      {selectedBoard ? (
+        <BoardCard
+          board={selectedBoard}
+          onSelectRandom={handleSelectRandomBoard}
+        />
+      ) : (
+        <button onClick={handleSelectRandomBoard} className="random-button">
+          Choose a Random Board
+        </button>
+      )}
     </div>
   );
 };
