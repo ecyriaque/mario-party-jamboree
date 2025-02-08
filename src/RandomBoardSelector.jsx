@@ -11,7 +11,20 @@ const RandomBoardSelector = () => {
   };
 
   return (
-    <div className="random-board-container">
+    <div
+      className="random-board-container"
+      style={{
+        backgroundImage: selectedBoard ? "none" : "url('/assets/jamboree.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       {selectedBoard ? (
         <BoardCard
           board={selectedBoard}
