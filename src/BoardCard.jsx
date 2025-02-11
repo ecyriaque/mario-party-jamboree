@@ -24,7 +24,6 @@ const BoardCard = ({ board, onSelectRandom }) => {
 
   return (
     <div className="board-fullscreen" ref={boardContainerRef}>
-      {/* Image de fond qui couvre tout l'écran */}
       <div
         className="board-background"
         style={{ backgroundImage: `url(${board.boardView})` }}
