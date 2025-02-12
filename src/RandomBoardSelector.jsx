@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { Howl } from "howler";
 import { boards } from "./data/board";
 import BoardCard from "./BoardCard";
+import BoardCarousel from "./BoardCarousel";
 
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
   const letsGoSoundRef = useRef(null);
   const mixSoundRef = useRef(null);
   const jamboreeThemeRef = useRef(null);
@@ -34,9 +36,9 @@ const RandomBoardSelector = () => {
     });
 
     return () => {
-      if (letsGoSoundRef.current) letsGoSoundRef.current.unload();
-      if (mixSoundRef.current) mixSoundRef.current.unload();
-      if (jamboreeThemeRef.current) jamboreeThemeRef.current.unload();
+      letsGoSoundRef.current?.unload();
+      mixSoundRef.current?.unload();
+      jamboreeThemeRef.current?.unload();
     };
   }, []);
 
@@ -44,54 +46,36 @@ const RandomBoardSelector = () => {
     const randomIndex = Math.floor(Math.random() * boards.length);
     setSelectedBoard(boards[randomIndex]);
 
-    if (jamboreeThemeRef.current) {
-      jamboreeThemeRef.current.stop();
-      jamboreeThemeRef.current.play();
-    }
+    // Jouer la musique finale
+    jamboreeThemeRef.current?.stop();
+    jamboreeThemeRef.current?.play();
 
     setIsPlaying(false);
+    setIsScrolling(false);
   };
 
   const handleButtonClick = () => {
     if (isPlaying) return;
 
     setIsPlaying(true);
+    setIsScrolling(true);
 
-    if (jamboreeThemeRef.current) {
-      jamboreeThemeRef.current.stop();
-    }
+    jamboreeThemeRef.current?.stop();
+    letsGoSoundRef.current?.stop();
+    letsGoSoundRef.current?.play();
+    mixSoundRef.current?.stop();
+    mixSoundRef.current?.play();
 
-    if (letsGoSoundRef.current) {
-      letsGoSoundRef.current.stop();
-      letsGoSoundRef.current.play();
-    }
-
-    if (mixSoundRef.current) {
-      mixSoundRef.current.stop();
-      mixSoundRef.current.play();
-
-      mixSoundRef.current.on("end", () => {
-        handleSelectRandomBoard();
-      });
-    }
+    setTimeout(() => {
+      handleSelectRandomBoard();
+    }, 5000); // Délai avant l'arrêt du défilement
   };
 
   return (
-    <div
-      className="random-board-container"
-      style={{
-        backgroundImage: selectedBoard ? "none" : "url('/assets/jamboree.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {selectedBoard ? (
+    <div className="random-board-container fullscreen">
+      {isScrolling ? (
+        <BoardCarousel onFinish={handleSelectRandomBoard} />
+      ) : selectedBoard ? (
         <BoardCard board={selectedBoard} onSelectRandom={handleButtonClick} />
       ) : (
         <button
