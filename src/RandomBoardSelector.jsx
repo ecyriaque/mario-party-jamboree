@@ -83,6 +83,11 @@ const RandomBoardSelector = () => {
       autoplay: false,
       html5: true,
     });
+    
+    // Démarrer la musique du thème automatiquement
+    if (jamboreeThemeRef.current && !isMuted) {
+      jamboreeThemeRef.current.play();
+    }
 
     // Animation d'entrée initiale
     gsap.fromTo(
@@ -91,6 +96,7 @@ const RandomBoardSelector = () => {
       { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
     );
 
+    // Animation du bouton
     if (buttonRef.current) {
       gsap.fromTo(
         buttonRef.current,
@@ -156,8 +162,16 @@ const RandomBoardSelector = () => {
     if (letsGoSoundRef.current)
       letsGoSoundRef.current.volume(isMuted ? 1.0 : 0);
     if (mixSoundRef.current) mixSoundRef.current.volume(isMuted ? 1.0 : 0);
-    if (jamboreeThemeRef.current)
+    if (jamboreeThemeRef.current) {
       jamboreeThemeRef.current.volume(isMuted ? 0.5 : 0);
+      
+      // Si on active le son et qu'aucun son ne joue, démarrer la musique de thème
+      if (isMuted && !jamboreeThemeRef.current.playing()) {
+        jamboreeThemeRef.current.play();
+      } else if (!isMuted) {
+        jamboreeThemeRef.current.pause();
+      }
+    }
   };
 
   return (
@@ -177,15 +191,24 @@ const RandomBoardSelector = () => {
       ) : selectedBoard ? (
         <BoardCard board={selectedBoard} onSelectRandom={handleButtonClick} />
       ) : (
-        <button
-          ref={buttonRef}
-          onClick={handleButtonClick}
-          className="random-button pulse-animation"
-          aria-label="Choisir un tableau aléatoire"
-          disabled={isPlaying}
-        >
-          Choisir un tableau aléatoire
-        </button>
+        <div className="welcome-screen">
+          <div className="logo-container">
+            <img 
+              src="/assets/jamboree.png" 
+              alt="Mario Party Jamboree" 
+              className="welcome-logo"
+            />
+          </div>
+          <button
+            ref={buttonRef}
+            onClick={handleButtonClick}
+            className="random-button pulse-animation"
+            aria-label="Choisir un tableau aléatoire"
+            disabled={isPlaying}
+          >
+            Choisir un tableau aléatoire
+          </button>
+        </div>
       )}
     </div>
   );
