@@ -1,53 +1,109 @@
-// BoardCarousel.jsx (amélioré)
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import PropTypes from "prop-types";
 import { boards } from "./data/board";
 
 const BoardCarousel = ({ onFinish }) => {
-  // currentBoard = plateau final sélectionné (pour React)
-  // currentIndex = index du plateau affiché pendant le shuffle (pour l'animation)
   const [currentBoard, setCurrentBoard] = useState(boards[0]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isShuffling, setIsShuffling] = useState(true);
   const [transitioning, setTransitioning] = useState(false);
-  const carouselRefs = useRef([]); // refs pour chaque board
+  const carouselRefs = useRef([]);
   const wrapperRef = useRef(null);
+  const labelsRef = useRef([]);
   const speedRef = useRef(400);
   const slowDownFactor = 1.08;
+  const [transitionType, setTransitionType] = useState(0);
 
-  // Pour le son et les confettis
   const confetti = window.confetti || (() => {});
+
   const playFinalSound = () => {
     const audio = new Audio("/assets/letsgo.mp3");
     audio.volume = 0.7;
     audio.play();
   };
 
-  // Helper pour attendre la fin d'une animation GSAP
+  const playShuffleSound = () => {
+    const audio = new Audio("/assets/shuffle-sound.mp3");
+    audio.volume = 0.3;
+    audio.play();
+  };
+
   function animatePromise(tween) {
     return new Promise((resolve) => {
       tween.eventCallback("onComplete", resolve);
     });
   }
 
+  const smoothTransition = async (prevRef, nextRef, speed) => {
+    // Durée des transitions basée sur la vitesse
+    // Plus le shuffle ralentit, plus les transitions deviennent douces
+    const duration = Math.min(0.45, Math.max(0.2, (6000 / speed) * 0.035));
+    const easeIn = "power2.inOut";
+    const easeOut = "power2.out";
+
+    // Effet d'apparition 3D subtil
+    await animatePromise(
+      gsap.to(prevRef, {
+        opacity: 0,
+        scale: 1.03,
+        y: "-5%",
+        filter: "blur(5px) brightness(1.1)",
+        duration: duration * 0.8,
+        ease: easeIn,
+        z: -100,
+      })
+    );
+
+    gsap.set(prevRef, {
+      opacity: 0,
+      scale: 1,
+      y: "0%",
+      z: 0,
+      filter: "blur(0px) brightness(1)",
+      zIndex: 1,
+    });
+    gsap.set(nextRef, {
+      opacity: 0,
+      scale: 0.97,
+      y: "3%",
+      filter: "blur(3px)",
+      zIndex: 2,
+    });
+
+    return animatePromise(
+      gsap.to(nextRef, {
+        opacity: 1,
+        scale: 1,
+        y: "0%",
+        filter: "blur(0px)",
+        duration: duration,
+        ease: easeOut,
+      })
+    );
+  };
+
   useEffect(() => {
     gsap.fromTo(
       wrapperRef.current,
       { opacity: 0 },
-      { opacity: 1, duration: 0.5, ease: "power2.inOut" }
+      { opacity: 1, duration: 0.7, ease: "power2.inOut" }
     );
     let cancelled = false;
     const prefersReduced =
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Initialisation : tous les boards sauf le premier sont cachés
     boards.forEach((_, i) => {
       if (carouselRefs.current[i]) {
         gsap.set(carouselRefs.current[i], {
           opacity: i === 0 ? 1 : 0,
           scale: 1,
+          rotation: 0,
+          x: "0%",
+          y: "0%",
+          z: 0,
+          rotationY: 0,
           filter: "blur(0px)",
           zIndex: i === 0 ? 2 : 1,
         });
@@ -58,89 +114,186 @@ const BoardCarousel = ({ onFinish }) => {
       let idx = 0;
       let speed = 400;
       setTransitioning(true);
+
+      // Animation d'introduction améliorée
+      const initialBoard = carouselRefs.current[idx];
+
+      gsap.fromTo(
+        initialBoard,
+        { filter: "brightness(1)" },
+        {
+          scale: 1.03,
+          filter: "brightness(1.15) contrast(1.05)",
+          boxShadow: "0 0 30px rgba(255, 204, 0, 0.3)",
+          duration: 0.8,
+          yoyo: true,
+          repeat: 1,
+          ease: "sine.inOut",
+        }
+      );
+
+      playShuffleSound();
+
+      // Délai pour laisser l'animation d'introduction se terminer
+      await new Promise((r) => setTimeout(r, 800));
+
       while (speed <= 6000 && !cancelled) {
         const prev = idx;
         const next = (idx + 1) % boards.length;
         const prevRef = carouselRefs.current[prev];
         const nextRef = carouselRefs.current[next];
-        // Sortie
-        await animatePromise(
-          gsap.to(prevRef, {
-            opacity: 0,
-            scale: 1.08,
-            filter: "blur(8px)",
-            duration: 0.25,
-            zIndex: 1,
-            ease: "power2.in",
-          })
-        );
-        // Mets à jour l'index pour afficher la nouvelle map
+
+        // Transition fluide
+        await smoothTransition(prevRef, nextRef, speed);
+
+        // Mise à jour de l'index actuel
         setCurrentIndex(next);
-        await new Promise((r) => setTimeout(r, 0)); // Laisse React re-render
-        gsap.set(prevRef, { zIndex: 1 });
-        gsap.set(nextRef, { zIndex: 2 });
-        await animatePromise(
+
+        // Animation du label avec le titre
+        if (labelsRef.current[next]) {
           gsap.fromTo(
-            nextRef,
-            { opacity: 0, scale: 0.92, filter: "blur(8px)" },
+            labelsRef.current[next],
+            { scale: 0.95, opacity: 0.5, y: "5px" },
             {
-              opacity: 1,
               scale: 1,
-              filter: "blur(0px)",
-              duration: 0.35,
-              ease: "power2.out",
+              opacity: 1,
+              y: "0px",
+              duration: 0.4,
+              ease: "back.out(1.2)",
             }
-          )
-        );
+          );
+        }
+
         idx = next;
         speed *= slowDownFactor;
         await new Promise((r) => setTimeout(r, speed));
       }
+
       if (!cancelled) {
         setIsShuffling(false);
         setCurrentBoard(boards[idx]);
         playFinalSound();
+
+        // Configuration améliorée des confettis
         confetti({
-          particleCount: 120,
-          spread: 90,
-          origin: { y: 0.7 },
+          particleCount: 150,
+          spread: 100,
+          origin: { y: 0.6 },
+          startVelocity: 40,
+          ticks: 300,
+          gravity: 0.8,
+          decay: 0.94,
+          shapes: ["circle", "square"],
+          colors: [
+            "#ffcc00",
+            "#ff9900",
+            "#ff0000",
+            "#ff66cc",
+            "#9933ff",
+            "#33ccff",
+          ],
         });
+
         const finalRef = carouselRefs.current[idx];
-        await animatePromise(
-          gsap.to(finalRef, {
-            x: "+=10",
-            repeat: 5,
-            yoyo: true,
-            duration: 0.08,
-            ease: "power1.inOut",
-          })
-        );
-        gsap.to(finalRef, { x: 0, duration: 0.1 });
-        await animatePromise(
-          gsap.to(finalRef, {
-            boxShadow: "0 0 40px 10px #ffcc00",
-            duration: 0.5,
-            yoyo: true,
-            repeat: 1,
-          })
-        );
+
+        // Séquence finale harmonieuse
+        // 1. Subtile vibration
+        gsap.to(finalRef, {
+          x: "+=5",
+          repeat: 3,
+          yoyo: true,
+          duration: 0.06,
+          ease: "power1.inOut",
+          onComplete: () => {
+            gsap.set(finalRef, { x: 0 });
+          },
+        });
+
+        // 2. Effet de surbrillance
+        gsap.to(finalRef, {
+          boxShadow: "0 0 40px 15px rgba(255, 204, 0, 0.6)",
+          filter: "brightness(1.15)",
+          duration: 0.8,
+          ease: "sine.inOut",
+          repeat: 1,
+          yoyo: true,
+        });
+
+        // 3. Animation douce du contenu
+        if (labelsRef.current[idx]) {
+          // Animation du titre
+          const titleElement = labelsRef.current[idx].querySelector("h1");
+          const iconElement = labelsRef.current[idx].querySelector(
+            ".board-shuffle-icon"
+          );
+
+          if (titleElement) {
+            gsap.fromTo(
+              titleElement,
+              { scale: 0.9, opacity: 0.8, y: "-10px" },
+              {
+                scale: 1.05,
+                opacity: 1,
+                y: "0px",
+                duration: 0.6,
+                ease: "back.out(1.7)",
+                delay: 0.2,
+                onComplete: () => {
+                  gsap.to(titleElement, {
+                    scale: 1,
+                    duration: 0.3,
+                    ease: "power2.out",
+                  });
+                },
+              }
+            );
+          }
+
+          // Animation de l'icône
+          if (iconElement) {
+            gsap.fromTo(
+              iconElement,
+              { scale: 0.8, rotation: "-5deg", opacity: 0.7 },
+              {
+                scale: 1.1,
+                rotation: "5deg",
+                opacity: 1,
+                duration: 0.7,
+                delay: 0.4,
+                ease: "elastic.out(1, 0.5)",
+                onComplete: () => {
+                  gsap.to(iconElement, {
+                    scale: 1,
+                    rotation: "0deg",
+                    duration: 0.4,
+                    ease: "power2.out",
+                  });
+                },
+              }
+            );
+          }
+        }
+
+        // Transition finale progressive
+        await new Promise((r) => setTimeout(r, 1800));
+
         await animatePromise(
           gsap.to(wrapperRef.current, {
             opacity: 0,
-            duration: 0.8,
-            delay: 0.7,
-            ease: "power2.inOut",
+            duration: 1.2,
+            ease: "power3.inOut",
           })
         );
+
         onFinish();
       }
+
       setTransitioning(false);
     }
 
     if (isShuffling && !prefersReduced) {
       shuffleAsync();
     } else if (isShuffling && prefersReduced) {
-      // fallback simple
       let idx = 0;
       let speed = 400;
       function next() {
@@ -157,13 +310,24 @@ const BoardCarousel = ({ onFinish }) => {
       }
       setTimeout(next, speed);
     }
+
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line
   }, [isShuffling]);
 
-  // Affichage : tous les boards sont dans le DOM, seul currentIndex est visible
+  const getTransitionClass = (isActive) => {
+    if (!isActive) return "";
+    const classes = [
+      "transition-fade-scale",
+      "transition-slide",
+      "transition-flip",
+      "transition-zoom",
+      "transition-rotate",
+    ];
+    return classes[transitionType] || "";
+  };
+
   return (
     <div
       className="carousel-wrapper"
@@ -171,20 +335,37 @@ const BoardCarousel = ({ onFinish }) => {
       role="region"
       aria-label="Board Carousel"
     >
+      <div className="shuffle-progress-bar">
+        <div
+          className="progress-fill"
+          style={{
+            width: `${Math.min((speedRef.current / 6000) * 100, 100)}%`,
+          }}
+        ></div>
+      </div>
+
       <div className="carousel">
         {boards.map((board, i) => (
           <div
             key={i}
             ref={(el) => (carouselRefs.current[i] = el)}
-            className={`carousel-item${i === currentIndex ? " active" : ""}`}
+            className={`carousel-item${
+              i === currentIndex ? " active" : ""
+            } ${getTransitionClass(i === currentIndex)}`}
             style={{
               backgroundImage: `url(${board.boardView})`,
               zIndex: i === currentIndex ? 2 : 1,
             }}
             aria-hidden={i !== currentIndex}
           >
-            <div className="carousel-content carousel-content-large">
+            <div
+              className="carousel-content carousel-content-large"
+              ref={(el) => (labelsRef.current[i] = el)}
+            >
               <h1>{board.name}</h1>
+              <div className="board-shuffle-icon">
+                <img src={board.icon} alt={board.name} />
+              </div>
             </div>
           </div>
         ))}
