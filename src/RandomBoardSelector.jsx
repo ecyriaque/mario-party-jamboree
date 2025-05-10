@@ -14,16 +14,17 @@ const Particles = () => {
     if (!particlesRef.current) return;
 
     // Créer des particules avec des positions et des délais aléatoires
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 35; i++) {
       const particle = document.createElement("div");
       particle.classList.add("particle");
 
       // Paramètres aléatoires
-      const size = Math.random() * 4 + 2;
+      const size = Math.random() * 8 + 2;
       const posX = Math.random() * 100;
       const delay = Math.random() * 10;
-      const duration = Math.random() * 10 + 10;
-      const opacity = Math.random() * 0.5 + 0.3;
+      const duration = Math.random() * 15 + 10;
+      const opacity = Math.random() * 0.6 + 0.3;
+      const xOffset = Math.random() * 200 - 100; // Pour le mouvement horizontal
 
       // Appliquer les styles
       particle.style.width = `${size}px`;
@@ -31,7 +32,8 @@ const Particles = () => {
       particle.style.left = `${posX}%`;
       particle.style.bottom = "0";
       particle.style.opacity = opacity;
-      particle.style.animationDuration = `${duration}s`;
+      particle.style.setProperty("--duration", `${duration}s`);
+      particle.style.setProperty("--x-offset", `${xOffset}px`);
       particle.style.animationDelay = `${delay}s`;
 
       particlesRef.current.appendChild(particle);
@@ -49,17 +51,84 @@ const Particles = () => {
   return <div className="particles-container" ref={particlesRef}></div>;
 };
 
+const Loader = () => (
+  <div className="loader">
+    <div className="spinner" />
+    <span>Chargement…</span>
+  </div>
+);
+
+// Nouveau composant pour afficher la liste des favoris
+const FavoritesList = ({ favorites, onSelectBoard, onClose }) => {
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    // Animation d'entrée du panel
+    if (panelRef.current) {
+      gsap.fromTo(
+        panelRef.current,
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }
+      );
+    }
+  }, []);
+
+  return (
+    <div className="favorites-overlay">
+      <div className="favorites-panel" ref={panelRef}>
+        <button className="close-button" onClick={onClose}>
+          ×
+        </button>
+        <h2>Mes Tableaux Favoris</h2>
+        {favorites.length === 0 ? (
+          <p className="no-favorites">Aucun favori pour le moment</p>
+        ) : (
+          <div className="favorites-grid">
+            {favorites.map((boardId) => {
+              const board = boards.find((b) => b.id === boardId);
+              if (!board) return null;
+              return (
+                <div
+                  key={boardId}
+                  className="favorite-item"
+                  onClick={() => onSelectBoard(board)}
+                >
+                  <img
+                    src={board.icon}
+                    alt={board.name}
+                    className="favorite-icon"
+                  />
+                  <span>{board.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [favorites, setFavorites] = useState(() => {
+    // Chargement des favoris depuis le localStorage
+    const saved = localStorage.getItem("boardFavorites");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showFavorites, setShowFavorites] = useState(false);
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
+  const logoBackgroundRef = useRef(null);
 
   const letsGoSoundRef = useRef(null);
   const mixSoundRef = useRef(null);
   const jamboreeThemeRef = useRef(null);
+  const starSoundRef = useRef(null);
 
   useEffect(() => {
     letsGoSoundRef.current = new Howl({
@@ -83,7 +152,14 @@ const RandomBoardSelector = () => {
       autoplay: false,
       html5: true,
     });
-    
+
+    starSoundRef.current = new Howl({
+      src: ["/assets/star-sound.mp3"],
+      volume: isMuted ? 0 : 0.7,
+      autoplay: false,
+      html5: true,
+    });
+
     // Démarrer la musique du thème automatiquement
     if (jamboreeThemeRef.current && !isMuted) {
       jamboreeThemeRef.current.play();
@@ -92,22 +168,30 @@ const RandomBoardSelector = () => {
     // Animation d'entrée initiale
     gsap.fromTo(
       containerRef.current,
-      { opacity: 0, y: 50 },
-      { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+      { opacity: 0 },
+      { opacity: 1, duration: 1, ease: "power3.out" }
     );
 
     // Animation du bouton
     if (buttonRef.current) {
       gsap.fromTo(
         buttonRef.current,
-        { scale: 0.8, opacity: 0 },
+        { scale: 0.7, opacity: 0 },
         {
           scale: 1,
           opacity: 1,
           duration: 0.8,
-          delay: 0.5,
+          delay: 0.7,
           ease: "back.out(1.7)",
         }
+      );
+    }
+
+    if (logoBackgroundRef.current) {
+      gsap.fromTo(
+        logoBackgroundRef.current,
+        { opacity: 0, scale: 1.1 },
+        { opacity: 1, scale: 1, duration: 1.5, ease: "power2.out" }
       );
     }
 
@@ -115,26 +199,47 @@ const RandomBoardSelector = () => {
       letsGoSoundRef.current?.unload();
       mixSoundRef.current?.unload();
       jamboreeThemeRef.current?.unload();
+      starSoundRef.current?.unload();
     };
   }, [isMuted]);
 
+  // Sauvegarde des favoris dans le localStorage quand ils changent
+  useEffect(() => {
+    localStorage.setItem("boardFavorites", JSON.stringify(favorites));
+  }, [favorites]);
+
   const handleSelectRandomBoard = () => {
-    const randomIndex = Math.floor(Math.random() * boards.length);
-    setSelectedBoard(boards[randomIndex]);
+    setLoading(true);
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * boards.length);
+      setSelectedBoard(boards[randomIndex]);
+      jamboreeThemeRef.current?.fade(0, 0.5, 1000);
+      setTimeout(() => {
+        jamboreeThemeRef.current?.play();
+      }, 1000);
+      setIsPlaying(false);
+      setIsScrolling(false);
+      setLoading(false);
+    }, 800); // Simule un chargement
+  };
 
-    // Arrêter et relancer la musique finale
-    jamboreeThemeRef.current?.stop();
-    jamboreeThemeRef.current?.play();
-
-    setIsPlaying(false);
+  const handleSelectBoard = (board) => {
+    setSelectedBoard(board);
+    setShowFavorites(false);
     setIsScrolling(false);
+    setIsPlaying(false);
+
+    // Effet de transition lors de la sélection d'un favori
+    gsap.fromTo(
+      containerRef.current,
+      { opacity: 0.7 },
+      { opacity: 1, duration: 0.7, ease: "power2.inOut" }
+    );
   };
 
   const handleButtonClick = () => {
     if (isPlaying) return;
     setIsPlaying(true);
-
-    // Animation du bouton avant de lancer le carousel
     gsap.to(buttonRef.current, {
       scale: 1.2,
       opacity: 0,
@@ -142,18 +247,24 @@ const RandomBoardSelector = () => {
       ease: "back.in(1.7)",
       onComplete: () => {
         setIsScrolling(true);
-
         jamboreeThemeRef.current?.stop();
         letsGoSoundRef.current?.stop();
         letsGoSoundRef.current?.play();
         mixSoundRef.current?.stop();
         mixSoundRef.current?.play();
-
         setTimeout(() => {
           handleSelectRandomBoard();
-        }, 5000); // Délai avant l'arrêt du carousel
+        }, 5000);
       },
     });
+    if (logoBackgroundRef.current) {
+      gsap.to(logoBackgroundRef.current, {
+        opacity: 0,
+        scale: 1.2,
+        duration: 0.5,
+        ease: "power2.in",
+      });
+    }
   };
 
   const handleMuteToggle = () => {
@@ -164,7 +275,7 @@ const RandomBoardSelector = () => {
     if (mixSoundRef.current) mixSoundRef.current.volume(isMuted ? 1.0 : 0);
     if (jamboreeThemeRef.current) {
       jamboreeThemeRef.current.volume(isMuted ? 0.5 : 0);
-      
+
       // Si on active le son et qu'aucun son ne joue, démarrer la musique de thème
       if (isMuted && !jamboreeThemeRef.current.playing()) {
         jamboreeThemeRef.current.play();
@@ -172,39 +283,97 @@ const RandomBoardSelector = () => {
         jamboreeThemeRef.current.pause();
       }
     }
+    if (starSoundRef.current) {
+      starSoundRef.current.volume(isMuted ? 0.7 : 0);
+    }
   };
+
+  const toggleFavorite = (boardId) => {
+    setFavorites((prev) => {
+      if (prev.includes(boardId)) {
+        // Retirer des favoris
+        return prev.filter((id) => id !== boardId);
+      } else {
+        // Ajouter aux favoris avec effet sonore
+        if (starSoundRef.current && !isMuted) {
+          starSoundRef.current.play();
+        }
+        return [...prev, boardId];
+      }
+    });
+  };
+
+  const isFavorite = selectedBoard
+    ? favorites.includes(selectedBoard.id)
+    : false;
 
   return (
     <div className="random-board-container fullscreen" ref={containerRef}>
       <Particles />
 
-      <button
-        onClick={handleMuteToggle}
-        className="mute-button"
-        aria-label={isMuted ? "Activer le son" : "Couper le son"}
-      >
-        {isMuted ? "🔊" : "🔇"}
-      </button>
+      <div className="app-controls">
+        <button
+          onClick={handleMuteToggle}
+          className="control-button mute-button"
+          aria-label={isMuted ? "Activer le son" : "Couper le son"}
+        >
+          {isMuted ? "🔊" : "🔇"}
+        </button>
+        <button
+          onClick={() => setShowFavorites(true)}
+          className="control-button favorites-button"
+          aria-label="Afficher mes favoris"
+        >
+          ⭐
+        </button>
+      </div>
+
+      {showFavorites && (
+        <FavoritesList
+          favorites={favorites}
+          onSelectBoard={handleSelectBoard}
+          onClose={() => setShowFavorites(false)}
+        />
+      )}
 
       {isScrolling ? (
         <BoardCarousel onFinish={handleSelectRandomBoard} />
       ) : selectedBoard ? (
-        <BoardCard board={selectedBoard} onSelectRandom={handleButtonClick} />
+        <>
+          <BoardCard board={selectedBoard} onSelectRandom={handleButtonClick} />
+          <button
+            onClick={() => toggleFavorite(selectedBoard.id)}
+            className={`favorite-toggle ${isFavorite ? "is-favorite" : ""}`}
+            aria-label={
+              isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+            }
+          >
+            {isFavorite ? "★" : "☆"}
+          </button>
+        </>
       ) : (
         <div className="welcome-screen">
-          <div className="logo-container">
-            <img 
-              src="/assets/jamboree.png" 
-              alt="Mario Party Jamboree" 
+          <div className="logo-container" ref={logoBackgroundRef}>
+            <img
+              src="/assets/jamboree.png"
+              alt="Mario Party Jamboree Logo"
               className="welcome-logo"
             />
+            <Particles />
           </div>
+          <h2 className="welcome-title">
+            Bienvenue sur Mario Party Jamboree !
+          </h2>
+          <p className="welcome-baseline">
+            Clique sur le bouton pour découvrir ton plateau aléatoire 🎲
+          </p>
           <button
             ref={buttonRef}
             onClick={handleButtonClick}
             className="random-button pulse-animation"
             aria-label="Choisir un tableau aléatoire"
             disabled={isPlaying}
+            tabIndex={0}
           >
             Choisir un tableau aléatoire
           </button>
