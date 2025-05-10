@@ -148,7 +148,7 @@ const BoardCard = ({ board, onSelectRandom }) => {
           ref={buttonRef}
           onClick={onSelectRandom}
           className="random-button pulse-animation"
-          aria-label="Choisir un tableau aléatoire"
+          aria-label="Choisir un plateau aléatoire"
         >
           Choisir un autre tableau
         </button>

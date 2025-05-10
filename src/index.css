@@ -1,4 +1,3 @@
-/* index.css (amélioré) */
 :root {
   --primary-font: "Shin Go", sans-serif;
   --background-color: #0a0a2a;
@@ -335,8 +334,9 @@ p {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  transition: background-color 0.3s ease;
+  transition: all 0.5s ease;
   z-index: 2;
+  perspective: 1000px;
 }
 
 .carousel {
@@ -344,6 +344,7 @@ p {
   transition: transform 0.6s ease-in-out;
   height: 100vh;
   will-change: transform;
+  perspective: 1000px;
 }
 
 .carousel-item {
@@ -359,29 +360,17 @@ p {
   left: 0;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s, z-index 0s 0.3s;
+  transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+  transform-style: preserve-3d;
   will-change: opacity, transform, filter;
+  box-shadow: 0 0 0 rgba(255, 204, 0, 0);
 }
 
 .carousel-item.active {
   opacity: 1;
   pointer-events: auto;
   z-index: 2;
-  transition: opacity 0.3s, z-index 0s;
-}
-
-.carousel-item.transitioning {
-  animation: flash 0.2s;
-}
-
-@keyframes flash {
-  0%,
-  100% {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(1.3);
-  }
+  transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
 }
 
 .carousel-item::before {
@@ -391,34 +380,95 @@ p {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
+  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5));
+  opacity: 0.7;
   z-index: 1;
+  transition: opacity 0.5s ease;
 }
 
-.carousel-content {
-  background: var(--card-bg);
-  padding: var(--card-padding);
-  border-radius: var(--card-border-radius);
-  text-align: center;
-  backdrop-filter: blur(10px);
-  color: var(--text-color);
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transform: scale(0.9);
-  animation: scale-in 0.4s forwards;
-  min-width: 200px;
+.carousel-item.active::before {
+  opacity: 0.6;
 }
 
-.carousel-content h1 {
-  margin: 0;
-  font-size: 2rem;
+.shuffle-progress-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes scale-in {
-  to {
-    transform: scale(1);
+.shuffle-progress-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffcc00, #ff6600);
+  transition: width 0.5s ease-out;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 180, 0, 0.7);
+  width: 0%;
+}
+
+.carousel-content.carousel-content-large {
+  padding: 25px 40px;
+  max-width: 500px;
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 180, 0, 0.2);
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 20px;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateZ(0);
+}
+
+.carousel-content.carousel-content-large h1 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(255, 180, 0, 0.5);
+  letter-spacing: 1px;
+  transition: all 0.4s ease;
+}
+
+.board-shuffle-icon {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  transition: all 0.4s ease;
+}
+
+.board-shuffle-icon img {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 0 10px rgba(255, 180, 0, 0.7));
+  animation: shuffle-icon-spin 10s linear infinite;
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+@keyframes shuffle-icon-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.active .carousel-content.carousel-content-large {
+  animation: content-glow 3s ease infinite alternate;
+}
+
+@keyframes content-glow {
+  0% {
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 180, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.7), 0 0 40px rgba(255, 180, 0, 0.4);
   }
 }
 
@@ -920,4 +970,26 @@ button:focus {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.transition-fade-scale {
+  transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease;
+}
+
+.transition-slide {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.transition-flip {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.transition-zoom {
+  transition: transform 0.4s ease, opacity 0.4s ease, filter 0.4s ease;
+}
+
+.transition-rotate {
+  transition: transform 0.4s ease, opacity 0.4s ease, rotation 0.4s ease;
 }

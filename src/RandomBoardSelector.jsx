@@ -24,9 +24,8 @@ const Particles = () => {
       const delay = Math.random() * 10;
       const duration = Math.random() * 15 + 10;
       const opacity = Math.random() * 0.6 + 0.3;
-      const xOffset = Math.random() * 200 - 100; // Pour le mouvement horizontal
+      const xOffset = Math.random() * 200 - 100;
 
-      // Appliquer les styles
       particle.style.width = `${size}px`;
       particle.style.height = `${size}px`;
       particle.style.left = `${posX}%`;
@@ -58,12 +57,10 @@ const Loader = () => (
   </div>
 );
 
-// Nouveau composant pour afficher la liste des favoris
 const FavoritesList = ({ favorites, onSelectBoard, onClose }) => {
   const panelRef = useRef(null);
 
   useEffect(() => {
-    // Animation d'entrée du panel
     if (panelRef.current) {
       gsap.fromTo(
         panelRef.current,
@@ -79,7 +76,7 @@ const FavoritesList = ({ favorites, onSelectBoard, onClose }) => {
         <button className="close-button" onClick={onClose}>
           ×
         </button>
-        <h2>Mes Tableaux Favoris</h2>
+        <h2>Mes Plateaux Favoris</h2>
         {favorites.length === 0 ? (
           <p className="no-favorites">Aucun favori pour le moment</p>
         ) : (
@@ -371,11 +368,11 @@ const RandomBoardSelector = () => {
             ref={buttonRef}
             onClick={handleButtonClick}
             className="random-button pulse-animation"
-            aria-label="Choisir un tableau aléatoire"
+            aria-label="Choisir un plateaux aléatoire"
             disabled={isPlaying}
             tabIndex={0}
           >
-            Choisir un tableau aléatoire
+            Choisir un plateau aléatoire
           </button>
         </div>
       )}
