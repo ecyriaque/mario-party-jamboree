@@ -36,48 +36,65 @@ const BoardCarousel = ({ onFinish }) => {
   }
 
   const smoothTransition = async (prevRef, nextRef, speed) => {
-    // Durée des transitions basée sur la vitesse
-    // Plus le shuffle ralentit, plus les transitions deviennent douces
     const duration = Math.min(0.45, Math.max(0.2, (6000 / speed) * 0.035));
     const easeIn = "power2.inOut";
     const easeOut = "power2.out";
 
-    // Effet d'apparition 3D subtil
+    // Flash lumineux rapide au centre
+    const flash = document.createElement("div");
+    flash.style.position = "fixed";
+    flash.style.top = 0;
+    flash.style.left = 0;
+    flash.style.width = "100vw";
+    flash.style.height = "100vh";
+    flash.style.zIndex = 9999;
+    flash.style.pointerEvents = "none";
+    flash.style.background =
+      "radial-gradient(circle, rgba(255,255,200,0.7) 0%, rgba(255,255,200,0.2) 40%, transparent 80%)";
+    flash.style.opacity = 0;
+    document.body.appendChild(flash);
+    gsap.to(flash, {
+      opacity: 1,
+      duration: 0.08,
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => flash.remove(),
+    });
+
+    // Sortie de la map précédente : flip + zoom + fondu
     await animatePromise(
       gsap.to(prevRef, {
         opacity: 0,
-        scale: 1.03,
-        y: "-5%",
-        filter: "blur(5px) brightness(1.1)",
-        duration: duration * 0.8,
+        scale: 1.08,
+        rotationY: 90,
+        filter: "blur(8px) brightness(1.2)",
+        duration: duration * 0.7,
         ease: easeIn,
         z: -100,
       })
     );
-
     gsap.set(prevRef, {
       opacity: 0,
       scale: 1,
-      y: "0%",
-      z: 0,
+      rotationY: 0,
       filter: "blur(0px) brightness(1)",
       zIndex: 1,
     });
     gsap.set(nextRef, {
       opacity: 0,
-      scale: 0.97,
-      y: "3%",
-      filter: "blur(3px)",
+      scale: 0.92,
+      rotationY: -90,
+      filter: "blur(8px)",
       zIndex: 2,
     });
-
+    // Entrée de la nouvelle map : flip inverse + zoom + fondu
     return animatePromise(
       gsap.to(nextRef, {
         opacity: 1,
         scale: 1,
-        y: "0%",
+        rotationY: 0,
         filter: "blur(0px)",
-        duration: duration,
+        duration: duration * 1.1,
         ease: easeOut,
       })
     );
@@ -335,15 +352,6 @@ const BoardCarousel = ({ onFinish }) => {
       role="region"
       aria-label="Board Carousel"
     >
-      <div className="shuffle-progress-bar">
-        <div
-          className="progress-fill"
-          style={{
-            width: `${Math.min((speedRef.current / 6000) * 100, 100)}%`,
-          }}
-        ></div>
-      </div>
-
       <div className="carousel">
         {boards.map((board, i) => (
           <div
