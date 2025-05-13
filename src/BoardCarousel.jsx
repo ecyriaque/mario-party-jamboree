@@ -11,8 +11,8 @@ const BoardCarousel = ({ onFinish }) => {
   const carouselRefs = useRef([]);
   const wrapperRef = useRef(null);
   const labelsRef = useRef([]);
-  const speedRef = useRef(400);
-  const slowDownFactor = 1.08;
+  const speedRef = useRef(700);
+  const slowDownFactor = 1.13;
   const [transitionType, setTransitionType] = useState(0);
 
   const confetti = window.confetti || (() => {});
@@ -97,6 +97,37 @@ const BoardCarousel = ({ onFinish }) => {
     );
   };
 
+  const animateShuffleImage = (ref, progress, isFinal = false) => {
+    if (!ref) return;
+    const baseScale = 1 + 0.04 * Math.sin(progress * Math.PI * 2);
+    const baseSaturate = 1.1 + 0.3 * Math.abs(Math.sin(progress * Math.PI));
+    const baseBlur = isFinal
+      ? 0
+      : 2 + 2 * Math.abs(Math.sin(progress * Math.PI));
+    const baseShadow = isFinal
+      ? "0 0 60px 20px #ffcc00, 0 0 120px 40px #fff"
+      : "0 0 30px 10px #ffcc00, 0 0 0 #fff";
+    gsap.to(ref, {
+      scale: baseScale,
+      filter: `saturate(${baseSaturate}) blur(${baseBlur}px) brightness(1.08)`,
+      boxShadow: baseShadow,
+      duration: 0.5,
+      ease: "power2.inOut",
+    });
+    gsap.fromTo(
+      ref,
+      { x: "-2px" },
+      {
+        x: "2px",
+        duration: 0.08,
+        yoyo: true,
+        repeat: 3,
+        ease: "sine.inOut",
+        onComplete: () => gsap.set(ref, { x: 0 }),
+      }
+    );
+  };
+
   useEffect(() => {
     gsap.fromTo(
       wrapperRef.current,
@@ -126,7 +157,7 @@ const BoardCarousel = ({ onFinish }) => {
 
     async function shuffleAsync() {
       let idx = 0;
-      let speed = 400;
+      let speed = 700;
       setTransitioning(true);
 
       const initialBoard = carouselRefs.current[idx];
@@ -159,19 +190,7 @@ const BoardCarousel = ({ onFinish }) => {
 
         setCurrentIndex(next);
 
-        if (labelsRef.current[next]) {
-          gsap.fromTo(
-            labelsRef.current[next],
-            { scale: 0.95, opacity: 0.5, y: "5px" },
-            {
-              scale: 1,
-              opacity: 1,
-              y: "0px",
-              duration: 0.4,
-              ease: "back.out(1.2)",
-            }
-          );
-        }
+        animateShuffleImage(nextRef, speed / 6000);
 
         idx = next;
         speed *= slowDownFactor;
@@ -183,14 +202,88 @@ const BoardCarousel = ({ onFinish }) => {
         setCurrentBoard(boards[idx]);
         playFinalSound();
 
+        const finalRef = carouselRefs.current[idx];
+
+        const revealFlash = document.createElement("div");
+        revealFlash.style.position = "absolute";
+        revealFlash.style.top = 0;
+        revealFlash.style.left = 0;
+        revealFlash.style.width = "100%";
+        revealFlash.style.height = "100%";
+        revealFlash.style.background =
+          "radial-gradient(circle, #fff 0%, #fff8 60%, transparent 100%)";
+        revealFlash.style.opacity = 0;
+        revealFlash.style.pointerEvents = "none";
+        revealFlash.style.zIndex = 99;
+        finalRef.appendChild(revealFlash);
+        gsap.to(revealFlash, {
+          opacity: 1,
+          duration: 0.18,
+          yoyo: true,
+          repeat: 1,
+          onComplete: () => revealFlash.remove(),
+        });
+
+        gsap.fromTo(
+          finalRef,
+          { scale: 1.08 },
+          {
+            scale: 1.18,
+            duration: 0.22,
+            ease: "power2.in",
+            onComplete: () => {
+              gsap.to(finalRef, {
+                scale: 1,
+                duration: 0.7,
+                ease: "elastic.out(1, 0.5)",
+              });
+            },
+          }
+        );
+
+        gsap.fromTo(
+          finalRef,
+          { boxShadow: "0 0 0px 0px #ffcc00" },
+          {
+            boxShadow: "0 0 80px 30px #ffcc00, 0 0 160px 60px #fff8",
+            duration: 0.7,
+            ease: "power2.out",
+            yoyo: true,
+            repeat: 1,
+            onComplete: () => {
+              gsap.to(finalRef, {
+                boxShadow: "none",
+                duration: 0.5,
+                ease: "power2.inOut",
+              });
+            },
+          }
+        );
+
+        const content = labelsRef.current[idx];
+        if (content) {
+          gsap.fromTo(
+            content,
+            { opacity: 0, y: 40, scale: 0.95 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.7,
+              delay: 0.18,
+              ease: "back.out(1.7)",
+            }
+          );
+        }
+
         confetti({
-          particleCount: 150,
-          spread: 100,
+          particleCount: 180,
+          spread: 120,
           origin: { y: 0.6 },
-          startVelocity: 40,
-          ticks: 300,
-          gravity: 0.8,
-          decay: 0.94,
+          startVelocity: 50,
+          ticks: 320,
+          gravity: 0.7,
+          decay: 0.93,
           shapes: ["circle", "square"],
           colors: [
             "#ffcc00",
@@ -201,80 +294,6 @@ const BoardCarousel = ({ onFinish }) => {
             "#33ccff",
           ],
         });
-
-        const finalRef = carouselRefs.current[idx];
-
-        gsap.to(finalRef, {
-          x: "+=5",
-          repeat: 3,
-          yoyo: true,
-          duration: 0.06,
-          ease: "power1.inOut",
-          onComplete: () => {
-            gsap.set(finalRef, { x: 0 });
-          },
-        });
-
-        gsap.to(finalRef, {
-          boxShadow: "0 0 40px 15px rgba(255, 204, 0, 0.6)",
-          filter: "brightness(1.15)",
-          duration: 0.8,
-          ease: "sine.inOut",
-          repeat: 1,
-          yoyo: true,
-        });
-
-        if (labelsRef.current[idx]) {
-          const titleElement = labelsRef.current[idx].querySelector("h1");
-          const iconElement = labelsRef.current[idx].querySelector(
-            ".board-shuffle-icon"
-          );
-
-          if (titleElement) {
-            gsap.fromTo(
-              titleElement,
-              { scale: 0.9, opacity: 0.8, y: "-10px" },
-              {
-                scale: 1.05,
-                opacity: 1,
-                y: "0px",
-                duration: 0.6,
-                ease: "back.out(1.7)",
-                delay: 0.2,
-                onComplete: () => {
-                  gsap.to(titleElement, {
-                    scale: 1,
-                    duration: 0.3,
-                    ease: "power2.out",
-                  });
-                },
-              }
-            );
-          }
-
-          if (iconElement) {
-            gsap.fromTo(
-              iconElement,
-              { scale: 0.8, rotation: "-5deg", opacity: 0.7 },
-              {
-                scale: 1.1,
-                rotation: "5deg",
-                opacity: 1,
-                duration: 0.7,
-                delay: 0.4,
-                ease: "elastic.out(1, 0.5)",
-                onComplete: () => {
-                  gsap.to(iconElement, {
-                    scale: 1,
-                    rotation: "0deg",
-                    duration: 0.4,
-                    ease: "power2.out",
-                  });
-                },
-              }
-            );
-          }
-        }
 
         await new Promise((r) => setTimeout(r, 1800));
 
@@ -296,7 +315,7 @@ const BoardCarousel = ({ onFinish }) => {
       shuffleAsync();
     } else if (isShuffling && prefersReduced) {
       let idx = 0;
-      let speed = 400;
+      let speed = 700;
       function next() {
         if (speed > 6000 || cancelled) {
           setIsShuffling(false);

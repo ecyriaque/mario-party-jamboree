@@ -1074,3 +1074,114 @@ button:focus {
   gap: 40px;
   z-index: 2;
 }
+
+.board-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: left;
+}
+
+.board-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.board-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.board-stat {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ffcc00;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.reset-button {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, var(--button-bg), var(--button-bg-hover));
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 50px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.reset-button:hover {
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 204, 0, 0.6);
+  background: linear-gradient(45deg, var(--button-bg-hover), var(--button-bg));
+}
+
+.reset-button:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.reset-icon {
+  font-size: 1.4rem;
+  animation: spin-slow 3s linear infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ajustements pour les petits écrans */
+@media (max-width: 768px) {
+  .board-description {
+    font-size: 1rem;
+  }
+
+  .board-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reset-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+}
