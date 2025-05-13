@@ -993,3 +993,36 @@ button:focus {
 .transition-rotate {
   transition: transform 0.4s ease, opacity 0.4s ease, rotation 0.4s ease;
 }
+
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  top: -10px;
+  opacity: 0;
+  z-index: 9999;
+  animation: confetti-fall 4s ease-in-out forwards;
+  transform-origin: center;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(25vh) rotate(180deg) scale(0.8) translateX(50px);
+  }
+  50% {
+    transform: translateY(50vh) rotate(360deg) scale(1.2) translateX(-50px);
+  }
+  75% {
+    transform: translateY(75vh) rotate(540deg) scale(0.9) translateX(30px);
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) scale(1) translateX(-30px);
+    opacity: 0;
+  }
+}

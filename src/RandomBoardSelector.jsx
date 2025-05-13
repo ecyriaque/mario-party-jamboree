@@ -121,6 +121,7 @@ const RandomBoardSelector = () => {
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
   const logoBackgroundRef = useRef(null);
+  const confettiIntervalRef = useRef(null);
 
   const letsGoSoundRef = useRef(null);
   const mixSoundRef = useRef(null);
@@ -205,11 +206,57 @@ const RandomBoardSelector = () => {
     localStorage.setItem("boardFavorites", JSON.stringify(favorites));
   }, [favorites]);
 
+  const createConfetti = () => {
+    for (let i = 0; i < 2; i++) {
+      const confetti = document.createElement("div");
+      confetti.classList.add("confetti");
+      confetti.style.left = `${Math.random() * 100}%`;
+      confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+      confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      confetti.style.width = `${Math.random() * 8 + 4}px`;
+      confetti.style.height = `${Math.random() * 8 + 4}px`;
+      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+      document.body.appendChild(confetti);
+
+      setTimeout(() => {
+        confetti.remove();
+      }, 3000);
+    }
+  };
+
+  const startConfettiShower = () => {
+    if (confettiIntervalRef.current) {
+      clearInterval(confettiIntervalRef.current);
+    }
+
+    confettiIntervalRef.current = setInterval(() => {
+      createConfetti();
+    }, 150);
+  };
+
+  const stopConfettiShower = () => {
+    if (confettiIntervalRef.current) {
+      clearInterval(confettiIntervalRef.current);
+      confettiIntervalRef.current = null;
+    }
+  };
+
+  // Nettoyer les confettis lors du démontage du composant
+  useEffect(() => {
+    return () => {
+      stopConfettiShower();
+    };
+  }, []);
+
   const handleSelectRandomBoard = () => {
     setLoading(true);
     setTimeout(() => {
       const randomIndex = Math.floor(Math.random() * boards.length);
       setSelectedBoard(boards[randomIndex]);
+
+      // Démarrer la pluie de confettis
+      startConfettiShower();
+
       jamboreeThemeRef.current?.fade(0, 0.5, 1000);
       setTimeout(() => {
         jamboreeThemeRef.current?.play();
@@ -217,7 +264,7 @@ const RandomBoardSelector = () => {
       setIsPlaying(false);
       setIsScrolling(false);
       setLoading(false);
-    }, 800); // Simule un chargement
+    }, 800);
   };
 
   const handleSelectBoard = (board) => {
@@ -237,6 +284,8 @@ const RandomBoardSelector = () => {
   const handleButtonClick = () => {
     if (isPlaying) return;
     setIsPlaying(true);
+    stopConfettiShower(); // Arrêter les confettis avant de changer de carte
+
     gsap.to(buttonRef.current, {
       scale: 1.2,
       opacity: 0,
@@ -254,6 +303,7 @@ const RandomBoardSelector = () => {
         }, 5000);
       },
     });
+
     if (logoBackgroundRef.current) {
       gsap.to(logoBackgroundRef.current, {
         opacity: 0,
