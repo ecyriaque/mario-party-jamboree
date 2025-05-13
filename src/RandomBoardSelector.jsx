@@ -409,12 +409,6 @@ const RandomBoardSelector = () => {
             />
             <Particles />
           </div>
-          <h2 className="welcome-title">
-            Bienvenue sur Mario Party Jamboree !
-          </h2>
-          <p className="welcome-baseline">
-            Clique sur le bouton pour découvrir ton plateau aléatoire 🎲
-          </p>
           <button
             ref={buttonRef}
             onClick={handleButtonClick}
