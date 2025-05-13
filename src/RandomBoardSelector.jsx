@@ -358,14 +358,15 @@ const RandomBoardSelector = () => {
     <div className="random-board-container fullscreen" ref={containerRef}>
       <Particles />
 
+      <button
+        onClick={handleMuteToggle}
+        className="control-button mute-button"
+        aria-label={isMuted ? "Activer le son" : "Couper le son"}
+      >
+        {isMuted ? "🔊" : "🔇"}
+      </button>
+
       <div className="app-controls">
-        <button
-          onClick={handleMuteToggle}
-          className="control-button mute-button"
-          aria-label={isMuted ? "Activer le son" : "Couper le son"}
-        >
-          {isMuted ? "🔊" : "🔇"}
-        </button>
         <button
           onClick={() => setShowFavorites(true)}
           className="control-button favorites-button"
