@@ -1,106 +1,14 @@
-import { useState, useEffect, useRef } from "react";
-import { Howl } from "howler";
+import { useState, useRef, useEffect } from "react";
 import { gsap } from "gsap";
-import { boards } from "./data/board";
 import BoardCard from "./BoardCard";
 import BoardCarousel from "./BoardCarousel";
-
-const Particles = () => {
-  const particlesRef = useRef(null);
-
-  useEffect(() => {
-    if (!particlesRef.current) return;
-
-    for (let i = 0; i < 35; i++) {
-      const particle = document.createElement("div");
-      particle.classList.add("particle");
-
-      const size = Math.random() * 8 + 2;
-      const posX = Math.random() * 100;
-      const delay = Math.random() * 10;
-      const duration = Math.random() * 15 + 10;
-      const opacity = Math.random() * 0.6 + 0.3;
-      const xOffset = Math.random() * 200 - 100;
-
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${posX}%`;
-      particle.style.bottom = "0";
-      particle.style.opacity = opacity;
-      particle.style.setProperty("--duration", `${duration}s`);
-      particle.style.setProperty("--x-offset", `${xOffset}px`);
-      particle.style.animationDelay = `${delay}s`;
-
-      particlesRef.current.appendChild(particle);
-    }
-
-    return () => {
-      if (particlesRef.current) {
-        while (particlesRef.current.firstChild) {
-          particlesRef.current.removeChild(particlesRef.current.firstChild);
-        }
-      }
-    };
-  }, []);
-
-  return <div className="particles-container" ref={particlesRef}></div>;
-};
-
-const Loader = () => (
-  <div className="loader">
-    <div className="spinner" />
-    <span>Chargement…</span>
-  </div>
-);
-
-const FavoritesList = ({ favorites, onSelectBoard, onClose }) => {
-  const panelRef = useRef(null);
-
-  useEffect(() => {
-    if (panelRef.current) {
-      gsap.fromTo(
-        panelRef.current,
-        { scale: 0.9, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }
-      );
-    }
-  }, []);
-
-  return (
-    <div className="favorites-overlay">
-      <div className="favorites-panel" ref={panelRef}>
-        <button className="close-button" onClick={onClose}>
-          ×
-        </button>
-        <h2>Mes Plateaux Favoris</h2>
-        {favorites.length === 0 ? (
-          <p className="no-favorites">Aucun favori pour le moment</p>
-        ) : (
-          <div className="favorites-grid">
-            {favorites.map((boardId) => {
-              const board = boards.find((b) => b.id === boardId);
-              if (!board) return null;
-              return (
-                <div
-                  key={boardId}
-                  className="favorite-item"
-                  onClick={() => onSelectBoard(board)}
-                >
-                  <img
-                    src={board.icon}
-                    alt={board.name}
-                    className="favorite-icon"
-                  />
-                  <span>{board.name}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+import Particles from "./components/Particles";
+import Loader from "./components/Loader";
+import FavoritesList from "./components/FavoritesList";
+import useFavorites from "./hooks/useFavorites";
+import useAudio from "./hooks/useAudio";
+import useConfetti from "./hooks/useConfetti";
+import { boards } from "./data/board";
 
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -108,47 +16,16 @@ const RandomBoardSelector = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("boardFavorites");
-    return saved ? JSON.parse(saved) : [];
-  });
   const [showFavorites, setShowFavorites] = useState(false);
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
   const logoBackgroundRef = useRef(null);
-  const confettiIntervalRef = useRef(null);
 
-  const letsGoSoundRef = useRef(null);
-  const mixSoundRef = useRef(null);
-  const jamboreeThemeRef = useRef(null);
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { letsGoSoundRef, mixSoundRef, jamboreeThemeRef } = useAudio(isMuted);
+  const { startConfettiShower, stopConfettiShower } = useConfetti();
 
   useEffect(() => {
-    letsGoSoundRef.current = new Howl({
-      src: ["/assets/letsgo.mp3"],
-      volume: isMuted ? 0 : 1.0,
-      autoplay: false,
-      html5: true,
-    });
-
-    mixSoundRef.current = new Howl({
-      src: ["/assets/mixSound.mp3"],
-      volume: isMuted ? 0 : 1.0,
-      autoplay: false,
-      html5: true,
-    });
-
-    jamboreeThemeRef.current = new Howl({
-      src: ["/assets/jamboree-theme.mp3"],
-      volume: isMuted ? 0 : 0.5,
-      loop: true,
-      autoplay: false,
-      html5: true,
-    });
-
-    if (jamboreeThemeRef.current && !isMuted) {
-      jamboreeThemeRef.current.play();
-    }
-
     gsap.fromTo(
       containerRef.current,
       { opacity: 0 },
@@ -187,48 +64,6 @@ const RandomBoardSelector = () => {
   useEffect(() => {
     localStorage.setItem("boardFavorites", JSON.stringify(favorites));
   }, [favorites]);
-
-  const createConfetti = () => {
-    for (let i = 0; i < 2; i++) {
-      const confetti = document.createElement("div");
-      confetti.classList.add("confetti");
-      confetti.style.left = `${Math.random() * 100}%`;
-      confetti.style.animationDelay = `${Math.random() * 0.5}s`;
-      confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-      confetti.style.width = `${Math.random() * 8 + 4}px`;
-      confetti.style.height = `${Math.random() * 8 + 4}px`;
-      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-      document.body.appendChild(confetti);
-
-      setTimeout(() => {
-        confetti.remove();
-      }, 3000);
-    }
-  };
-
-  const startConfettiShower = () => {
-    if (confettiIntervalRef.current) {
-      clearInterval(confettiIntervalRef.current);
-    }
-
-    confettiIntervalRef.current = setInterval(() => {
-      createConfetti();
-    }, 150);
-  };
-
-  const stopConfettiShower = () => {
-    if (confettiIntervalRef.current) {
-      clearInterval(confettiIntervalRef.current);
-      confettiIntervalRef.current = null;
-    }
-  };
-
-  // Nettoyer les confettis lors du démontage du composant
-  useEffect(() => {
-    return () => {
-      stopConfettiShower();
-    };
-  }, []);
 
   const handleSelectRandomBoard = () => {
     setLoading(true);
@@ -311,20 +146,6 @@ const RandomBoardSelector = () => {
       }
     }
   };
-
-  const toggleFavorite = (boardId) => {
-    setFavorites((prev) => {
-      if (prev.includes(boardId)) {
-        return prev.filter((id) => id !== boardId);
-      } else {
-        return [...prev, boardId];
-      }
-    });
-  };
-
-  const isFavorite = selectedBoard
-    ? favorites.includes(selectedBoard.id)
-    : false;
 
   return (
     <div className="random-board-container fullscreen" ref={containerRef}>

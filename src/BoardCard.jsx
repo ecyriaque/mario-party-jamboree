@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import PropTypes from "prop-types";
+import { getDifficultyStars, getBoardType } from "./utils/boardUtils";
 
 const BoardCard = ({ board, onSelectRandom }) => {
   const boardContainerRef = useRef(null);
@@ -251,33 +252,6 @@ const BoardCard = ({ board, onSelectRandom }) => {
       </div>
     </div>
   );
-};
-
-// Fonctions utilitaires pour les données supplémentaires
-const getDifficultyStars = (boardId) => {
-  const difficulties = {
-    1: "★★☆☆☆",
-    2: "★★★☆☆",
-    3: "★★★★☆",
-    4: "★★★★★",
-    5: "★★☆☆☆",
-    6: "★★★★☆",
-    7: "★★★☆☆",
-  };
-  return difficulties[boardId] || "★★★☆☆";
-};
-
-const getBoardType = (boardId) => {
-  const types = {
-    1: "Nature",
-    2: "Course",
-    3: "Plage",
-    4: "Château",
-    5: "Ville",
-    6: "Western",
-    7: "Fantaisie",
-  };
-  return types[boardId] || "Standard";
 };
 
 BoardCard.propTypes = {
