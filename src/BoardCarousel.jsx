@@ -40,7 +40,6 @@ const BoardCarousel = ({ onFinish }) => {
     const easeIn = "power2.inOut";
     const easeOut = "power2.out";
 
-    // Flash lumineux rapide au centre
     const flash = document.createElement("div");
     flash.style.position = "fixed";
     flash.style.top = 0;
@@ -61,7 +60,6 @@ const BoardCarousel = ({ onFinish }) => {
       onComplete: () => flash.remove(),
     });
 
-    // Sortie de la map précédente : flip + zoom + fondu
     await animatePromise(
       gsap.to(prevRef, {
         opacity: 0,
@@ -87,7 +85,6 @@ const BoardCarousel = ({ onFinish }) => {
       filter: "blur(8px)",
       zIndex: 2,
     });
-    // Entrée de la nouvelle map : flip inverse + zoom + fondu
     return animatePromise(
       gsap.to(nextRef, {
         opacity: 1,
@@ -132,7 +129,6 @@ const BoardCarousel = ({ onFinish }) => {
       let speed = 400;
       setTransitioning(true);
 
-      // Animation d'introduction améliorée
       const initialBoard = carouselRefs.current[idx];
 
       gsap.fromTo(
@@ -151,7 +147,6 @@ const BoardCarousel = ({ onFinish }) => {
 
       playShuffleSound();
 
-      // Délai pour laisser l'animation d'introduction se terminer
       await new Promise((r) => setTimeout(r, 800));
 
       while (speed <= 6000 && !cancelled) {
@@ -160,13 +155,10 @@ const BoardCarousel = ({ onFinish }) => {
         const prevRef = carouselRefs.current[prev];
         const nextRef = carouselRefs.current[next];
 
-        // Transition fluide
         await smoothTransition(prevRef, nextRef, speed);
 
-        // Mise à jour de l'index actuel
         setCurrentIndex(next);
 
-        // Animation du label avec le titre
         if (labelsRef.current[next]) {
           gsap.fromTo(
             labelsRef.current[next],
@@ -191,7 +183,6 @@ const BoardCarousel = ({ onFinish }) => {
         setCurrentBoard(boards[idx]);
         playFinalSound();
 
-        // Configuration améliorée des confettis
         confetti({
           particleCount: 150,
           spread: 100,
@@ -213,8 +204,6 @@ const BoardCarousel = ({ onFinish }) => {
 
         const finalRef = carouselRefs.current[idx];
 
-        // Séquence finale harmonieuse
-        // 1. Subtile vibration
         gsap.to(finalRef, {
           x: "+=5",
           repeat: 3,
@@ -226,7 +215,6 @@ const BoardCarousel = ({ onFinish }) => {
           },
         });
 
-        // 2. Effet de surbrillance
         gsap.to(finalRef, {
           boxShadow: "0 0 40px 15px rgba(255, 204, 0, 0.6)",
           filter: "brightness(1.15)",
@@ -236,9 +224,7 @@ const BoardCarousel = ({ onFinish }) => {
           yoyo: true,
         });
 
-        // 3. Animation douce du contenu
         if (labelsRef.current[idx]) {
-          // Animation du titre
           const titleElement = labelsRef.current[idx].querySelector("h1");
           const iconElement = labelsRef.current[idx].querySelector(
             ".board-shuffle-icon"
@@ -266,7 +252,6 @@ const BoardCarousel = ({ onFinish }) => {
             );
           }
 
-          // Animation de l'icône
           if (iconElement) {
             gsap.fromTo(
               iconElement,
@@ -291,7 +276,6 @@ const BoardCarousel = ({ onFinish }) => {
           }
         }
 
-        // Transition finale progressive
         await new Promise((r) => setTimeout(r, 1800));
 
         await animatePromise(
@@ -366,18 +350,46 @@ const BoardCarousel = ({ onFinish }) => {
             }}
             aria-hidden={i !== currentIndex}
           >
-            <div
-              className="carousel-content carousel-content-large"
-              ref={(el) => (labelsRef.current[i] = el)}
-            >
-              <h1>{board.name}</h1>
-              <div className="board-shuffle-icon">
-                <img src={board.icon} alt={board.name} />
+            {!isShuffling && (
+              <div
+                className="carousel-content carousel-content-large"
+                ref={(el) => (labelsRef.current[i] = el)}
+              >
+                <h1>{board.name}</h1>
+                <div className="board-shuffle-icon">
+                  <img src={board.icon} alt={board.name} />
+                </div>
+                <div className="board-details">
+                  <p className="board-description">{board.description}</p>
+                  <div className="board-stats">
+                    <div className="board-stat">
+                      <span className="stat-label">Difficulté</span>
+                      <span className="stat-value">{board.difficulty}</span>
+                    </div>
+                    <div className="board-stat">
+                      <span className="stat-label">Type</span>
+                      <span className="stat-value">{board.type}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ))}
       </div>
+      {!isShuffling && (
+        <button
+          className="reset-button"
+          onClick={() => {
+            setIsShuffling(true);
+            setTransitioning(true);
+          }}
+          disabled={transitioning}
+        >
+          <span className="reset-icon">🔄</span>
+          Nouvelle Carte
+        </button>
+      )}
     </div>
   );
 };
