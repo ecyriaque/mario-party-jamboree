@@ -1,4 +1,3 @@
-// RandomBoardSelector.jsx (amélioré)
 import { useState, useEffect, useRef } from "react";
 import { Howl } from "howler";
 import { gsap } from "gsap";
@@ -6,19 +5,16 @@ import { boards } from "./data/board";
 import BoardCard from "./BoardCard";
 import BoardCarousel from "./BoardCarousel";
 
-// Composant Particles pour l'animation de fond
 const Particles = () => {
   const particlesRef = useRef(null);
 
   useEffect(() => {
     if (!particlesRef.current) return;
 
-    // Créer des particules avec des positions et des délais aléatoires
     for (let i = 0; i < 35; i++) {
       const particle = document.createElement("div");
       particle.classList.add("particle");
 
-      // Paramètres aléatoires
       const size = Math.random() * 8 + 2;
       const posX = Math.random() * 100;
       const delay = Math.random() * 10;
@@ -113,7 +109,6 @@ const RandomBoardSelector = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState(() => {
-    // Chargement des favoris depuis le localStorage
     const saved = localStorage.getItem("boardFavorites");
     return saved ? JSON.parse(saved) : [];
   });
@@ -126,7 +121,6 @@ const RandomBoardSelector = () => {
   const letsGoSoundRef = useRef(null);
   const mixSoundRef = useRef(null);
   const jamboreeThemeRef = useRef(null);
-  const starSoundRef = useRef(null);
 
   useEffect(() => {
     letsGoSoundRef.current = new Howl({
@@ -151,26 +145,16 @@ const RandomBoardSelector = () => {
       html5: true,
     });
 
-    starSoundRef.current = new Howl({
-      src: ["/assets/star-sound.mp3"],
-      volume: isMuted ? 0 : 0.7,
-      autoplay: false,
-      html5: true,
-    });
-
-    // Démarrer la musique du thème automatiquement
     if (jamboreeThemeRef.current && !isMuted) {
       jamboreeThemeRef.current.play();
     }
 
-    // Animation d'entrée initiale
     gsap.fromTo(
       containerRef.current,
       { opacity: 0 },
       { opacity: 1, duration: 1, ease: "power3.out" }
     );
 
-    // Animation du bouton
     if (buttonRef.current) {
       gsap.fromTo(
         buttonRef.current,
@@ -197,11 +181,9 @@ const RandomBoardSelector = () => {
       letsGoSoundRef.current?.unload();
       mixSoundRef.current?.unload();
       jamboreeThemeRef.current?.unload();
-      starSoundRef.current?.unload();
     };
   }, [isMuted]);
 
-  // Sauvegarde des favoris dans le localStorage quand ils changent
   useEffect(() => {
     localStorage.setItem("boardFavorites", JSON.stringify(favorites));
   }, [favorites]);
@@ -254,7 +236,6 @@ const RandomBoardSelector = () => {
       const randomIndex = Math.floor(Math.random() * boards.length);
       setSelectedBoard(boards[randomIndex]);
 
-      // Démarrer la pluie de confettis
       startConfettiShower();
 
       jamboreeThemeRef.current?.fade(0, 0.5, 1000);
@@ -284,7 +265,7 @@ const RandomBoardSelector = () => {
   const handleButtonClick = () => {
     if (isPlaying) return;
     setIsPlaying(true);
-    stopConfettiShower(); // Arrêter les confettis avant de changer de carte
+    stopConfettiShower();
 
     gsap.to(buttonRef.current, {
       scale: 1.2,
@@ -316,35 +297,26 @@ const RandomBoardSelector = () => {
 
   const handleMuteToggle = () => {
     setIsMuted((prev) => !prev);
-    // Mise à jour immédiate du volume sur les sons en cours
+
     if (letsGoSoundRef.current)
       letsGoSoundRef.current.volume(isMuted ? 1.0 : 0);
     if (mixSoundRef.current) mixSoundRef.current.volume(isMuted ? 1.0 : 0);
     if (jamboreeThemeRef.current) {
       jamboreeThemeRef.current.volume(isMuted ? 0.5 : 0);
 
-      // Si on active le son et qu'aucun son ne joue, démarrer la musique de thème
       if (isMuted && !jamboreeThemeRef.current.playing()) {
         jamboreeThemeRef.current.play();
       } else if (!isMuted) {
         jamboreeThemeRef.current.pause();
       }
     }
-    if (starSoundRef.current) {
-      starSoundRef.current.volume(isMuted ? 0.7 : 0);
-    }
   };
 
   const toggleFavorite = (boardId) => {
     setFavorites((prev) => {
       if (prev.includes(boardId)) {
-        // Retirer des favoris
         return prev.filter((id) => id !== boardId);
       } else {
-        // Ajouter aux favoris avec effet sonore
-        if (starSoundRef.current && !isMuted) {
-          starSoundRef.current.play();
-        }
         return [...prev, boardId];
       }
     });

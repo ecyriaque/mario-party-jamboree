@@ -23,12 +23,6 @@ const BoardCarousel = ({ onFinish }) => {
     audio.play();
   };
 
-  const playShuffleSound = () => {
-    const audio = new Audio("/assets/shuffle-sound.mp3");
-    audio.volume = 0.3;
-    audio.play();
-  };
-
   function animatePromise(tween) {
     return new Promise((resolve) => {
       tween.eventCallback("onComplete", resolve);
@@ -175,8 +169,6 @@ const BoardCarousel = ({ onFinish }) => {
           ease: "sine.inOut",
         }
       );
-
-      playShuffleSound();
 
       await new Promise((r) => setTimeout(r, 800));
 
