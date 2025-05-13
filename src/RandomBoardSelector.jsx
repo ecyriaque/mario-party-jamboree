@@ -401,24 +401,26 @@ const RandomBoardSelector = () => {
         </>
       ) : (
         <div className="welcome-screen">
-          <div className="logo-container" ref={logoBackgroundRef}>
-            <img
-              src="/assets/jamboree.png"
-              alt="Mario Party Jamboree Logo"
-              className="welcome-logo"
-            />
-            <Particles />
+          <Particles />
+          <div className="welcome-content-blur">
+            <div className="logo-container" ref={logoBackgroundRef}>
+              <img
+                src="/assets/jamboree-logo.png"
+                alt="Mario Party Jamboree Logo"
+                className="welcome-logo"
+              />
+            </div>
+            <button
+              ref={buttonRef}
+              onClick={handleButtonClick}
+              className="random-button pulse-animation"
+              aria-label="Choisir un plateaux aléatoire"
+              disabled={isPlaying}
+              tabIndex={0}
+            >
+              Choisir un plateau aléatoire
+            </button>
           </div>
-          <button
-            ref={buttonRef}
-            onClick={handleButtonClick}
-            className="random-button pulse-animation"
-            aria-label="Choisir un plateaux aléatoire"
-            disabled={isPlaying}
-            tabIndex={0}
-          >
-            Choisir un plateau aléatoire
-          </button>
         </div>
       )}
     </div>
