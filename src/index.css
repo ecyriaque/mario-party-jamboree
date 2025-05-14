@@ -1196,10 +1196,10 @@ button:focus {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 10000;
+  z-index: 1;
 }
 .mario-overlay svg {
-  z-index: 10001;
+  z-index: 1;
   position: absolute;
   pointer-events: none;
 }
@@ -1537,11 +1537,30 @@ button:focus {
 /* Ajustement pour que l'overlay soit au-dessus du blur d'accueil */
 .welcome-content-blur {
   position: relative;
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  padding-bottom: 60px;
+  margin-bottom: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 30px rgba(255, 150, 0, 0.3);
   z-index: 5;
 }
-.welcome-screen {
-  position: relative;
-  z-index: 1;
+
+/* Style pour assurer que Mario apparaît au-dessus des autres éléments */
+.mario-scene-container {
+  z-index: 10;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
 }
 
 .board-info-details {
@@ -1648,23 +1667,6 @@ button:focus {
   }
 }
 
-.welcome-content-blur {
-  background: rgba(10, 10, 42, 0.7);
-  border-radius: 32px;
-  backdrop-filter: blur(12px);
-  padding: 48px 32px 40px 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  z-index: 2;
-  max-height: 95vh;
-  overflow-y: auto;
-  text-align: center;
-  margin: 0 auto;
-}
-
 .welcome-title {
   text-align: center;
   margin: 10px auto;
@@ -1680,4 +1682,167 @@ button:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Style pour l'effet de saut de Mario */
+.button-highlight {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 204, 0, 0.8) 0%,
+    rgba(255, 204, 0, 0) 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Style spécifique pour le bloc question */
+.mario-question-block {
+  position: relative;
+  width: 100px !important;
+  height: 100px !important;
+  background: none !important; /* Fond transparent */
+  border: none !important;
+  border-radius: 4px !important;
+  overflow: visible !important;
+  text-align: center;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 30px auto !important;
+  transform-style: preserve-3d;
+  animation: block-float 1.5s infinite alternate ease-in-out;
+}
+
+.mario-question-block .block-face {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #ffcc00; /* Fond jaune uni */
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset -5px -5px 0 #cc9900, inset 5px 5px 0 #ffdd55,
+    0 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Masquer complètement l'élément highlight tout en permettant les interactions */
+.mario-question-block .button-highlight {
+  display: block;
+  background: none;
+  opacity: 0;
+  z-index: 1;
+}
+
+.mario-question-block:hover .block-face {
+  box-shadow: inset -6px -6px 0 #cc9900, inset 6px 6px 0 #ffdd55,
+    0 8px 15px rgba(0, 0, 0, 0.6);
+}
+
+.mario-question-block:active .block-face,
+.block-hit .block-face {
+  box-shadow: inset -4px -4px 0 #cc9900, inset 4px 4px 0 #ffdd55,
+    0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.mario-question-block .question-mark {
+  font-size: 56px;
+  font-weight: bold;
+  color: #000;
+  text-shadow: 2px 2px 0 #cc9900;
+  animation: question-pulse 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes question-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.mario-question-block .block-text {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+.mario-question-block:hover {
+  transform: scale(1.05) translateY(-5px);
+  cursor: pointer;
+}
+
+.mario-question-block:active,
+.mario-question-block.block-hit {
+  transform: scale(0.95) translateY(5px) !important;
+}
+
+/* Animation lorsque Mario frappe le bloc */
+.button-hit {
+  animation: block-hit-flash 0.5s ease-out;
+}
+
+@keyframes block-hit-flash {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.5);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+/* Ajuster l'animation du bloc quand il est frappé */
+.mario-question-block.button-bounce {
+  animation: mario-block-bounce 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes mario-block-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-20px) scale(1.05);
+  }
+  50% {
+    transform: translateY(-15px) scale(1.02);
+  }
+  75% {
+    transform: translateY(-5px) scale(1);
+  }
+}
+
+/* Désactiver l'effet ::before sur le bloc question */
+.mario-question-block::before,
+.mario-question-block:hover::before,
+.random-button.mario-question-block::before,
+.random-button.mario-question-block:hover::before {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  background: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
