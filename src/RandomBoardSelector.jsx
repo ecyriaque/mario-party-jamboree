@@ -12,6 +12,7 @@ import { boards } from "./data/board";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import WelcomeScreen from "./components/WelcomeScreen";
+import MarioScene from "./PlayerController";
 
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -237,14 +238,37 @@ const RandomBoardSelector = () => {
           </button>
         </>
       ) : (
-        <WelcomeScreen
-          logoRef={logoBackgroundRef}
-          buttonRef={buttonRef}
-          onButtonClick={handleButtonClick}
-        >
+        <div className="welcome-screen">
           <Particles />
-        </WelcomeScreen>
+          <div className="welcome-content-blur">
+            <div className="logo-container" ref={logoBackgroundRef}>
+              <img
+                src="/assets/jamboree-logo.png"
+                alt="Mario Party Jamboree Logo"
+                className="welcome-logo"
+              />
+            </div>
+            <button
+              ref={buttonRef}
+              onClick={handleButtonClick}
+              className="random-button pulse-animation"
+              aria-label="Choisir un plateaux aléatoire"
+              disabled={isPlaying}
+              tabIndex={0}
+            >
+              Choisir un plateau aléatoire
+            </button>
+          </div>
+        </div>
       )}
+
+      <MarioScene
+        height="150px"
+        bottom="0"
+        walkBounds={{ min: -10, max: 10 }}
+        walkSpeed={2}
+        useSimpleModel={true}
+      />
       <ToastContainer />
     </div>
   );
