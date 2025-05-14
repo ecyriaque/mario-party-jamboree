@@ -13,6 +13,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import WelcomeScreen from "./components/WelcomeScreen";
 import MarioScene from "./PlayerController";
+import { useMarioStore } from "./store/store";
 
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -26,7 +27,8 @@ const RandomBoardSelector = () => {
   const logoBackgroundRef = useRef(null);
 
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
-  const { letsGoSoundRef, mixSoundRef, jamboreeThemeRef } = useAudio(isMuted);
+  const { letsGoSoundRef, mixSoundRef, jamboreeThemeRef, coinSoundRef } =
+    useAudio(isMuted);
   const { startConfettiShower, stopConfettiShower } = useConfetti();
 
   useEffect(() => {
@@ -69,6 +71,21 @@ const RandomBoardSelector = () => {
     localStorage.setItem("boardFavorites", JSON.stringify(favorites));
   }, [favorites]);
 
+  useEffect(() => {
+    if (!selectedBoard && !isScrolling) {
+      const { resetPlayerPosition } = useMarioStore.getState();
+      resetPlayerPosition();
+    }
+  }, [selectedBoard, isScrolling]);
+
+  useEffect(() => {
+    const { setWalkBounds, setWalkSpeed, resetPlayerPosition } =
+      useMarioStore.getState();
+    resetPlayerPosition();
+    setWalkBounds({ min: -10, max: 10 });
+    setWalkSpeed(3.5);
+  }, []);
+
   const handleSelectRandomBoard = () => {
     setLoading(true);
     setTimeout(() => {
@@ -93,7 +110,6 @@ const RandomBoardSelector = () => {
     setIsScrolling(false);
     setIsPlaying(false);
 
-    // Effet de transition lors de la sélection d'un favori
     gsap.fromTo(
       containerRef.current,
       { opacity: 0.7 },
@@ -106,32 +122,78 @@ const RandomBoardSelector = () => {
     setIsPlaying(true);
     stopConfettiShower();
 
-    gsap.to(buttonRef.current, {
-      scale: 1.2,
-      opacity: 0,
-      duration: 0.5,
-      ease: "back.in(1.7)",
-      onComplete: () => {
-        setIsScrolling(true);
-        jamboreeThemeRef.current?.stop();
-        letsGoSoundRef.current?.stop();
-        letsGoSoundRef.current?.play();
-        mixSoundRef.current?.stop();
-        mixSoundRef.current?.play();
-        setTimeout(() => {
-          handleSelectRandomBoard();
-        }, 5000);
-      },
-    });
+    const buttonElement = buttonRef.current;
+    const buttonRect = buttonElement.getBoundingClientRect();
+    const buttonX = (buttonRect.left + buttonRect.right) / 2;
 
-    if (logoBackgroundRef.current) {
-      gsap.to(logoBackgroundRef.current, {
-        opacity: 0,
-        scale: 1.2,
-        duration: 0.5,
-        ease: "power2.in",
-      });
-    }
+    const viewportWidth = window.innerWidth;
+    const worldX = ((buttonX / viewportWidth) * 2 - 1) * 8;
+
+    const {
+      setButtonClicked,
+      setJumpTarget,
+      setPlayerHasHitButton,
+      resetPlayerPosition,
+    } = useMarioStore.getState();
+    setJumpTarget({ x: worldX, y: 0 });
+    setButtonClicked(true);
+    setPlayerHasHitButton(false);
+
+    const unsubscribe = useMarioStore.subscribe((state) => {
+      if (state.playerHasHitButton) {
+        unsubscribe();
+
+        coinSoundRef.current?.play();
+
+        buttonRef.current.classList.add("button-bounce", "button-hit");
+
+        setTimeout(() => {
+          setButtonClicked(false);
+          resetPlayerPosition();
+        }, 300);
+
+        gsap.to(buttonRef.current, {
+          y: -15,
+          duration: 0.2,
+          ease: "back.out(1.7)",
+          onComplete: () => {
+            gsap.to(buttonRef.current, {
+              y: 0,
+              duration: 0.2,
+              ease: "back.in(1.7)",
+              onComplete: () => {
+                gsap.to(buttonRef.current, {
+                  scale: 1.2,
+                  opacity: 0,
+                  duration: 0.5,
+                  ease: "back.in(1.7)",
+                  onComplete: () => {
+                    setIsScrolling(true);
+                    jamboreeThemeRef.current?.stop();
+                    letsGoSoundRef.current?.stop();
+                    letsGoSoundRef.current?.play();
+                    mixSoundRef.current?.stop();
+                    mixSoundRef.current?.play();
+                    setTimeout(() => {
+                      handleSelectRandomBoard();
+                    }, 5000);
+                  },
+                });
+              },
+            });
+          },
+        });
+
+        if (logoBackgroundRef.current) {
+          gsap.to(logoBackgroundRef.current, {
+            opacity: 0,
+            scale: 1.2,
+            duration: 0.5,
+            ease: "power2.in",
+          });
+        }
+      }
+    });
   };
 
   const handleMuteToggle = () => {
@@ -188,6 +250,37 @@ const RandomBoardSelector = () => {
     }
   };
 
+  const handleChooseAnotherBoard = () => {
+    if (isPlaying || isScrolling) {
+      console.log("Action déjà en cours, clic ignoré");
+      return;
+    }
+
+    console.log("Lancement du shuffle pour un nouveau plateau");
+
+    setIsPlaying(true);
+    stopConfettiShower();
+
+    gsap.to(containerRef.current, {
+      opacity: 0.5,
+      duration: 0.3,
+      ease: "power2.in",
+      onComplete: () => {
+        setIsScrolling(true);
+
+        jamboreeThemeRef.current?.stop();
+        letsGoSoundRef.current?.stop();
+        letsGoSoundRef.current?.play();
+        mixSoundRef.current?.stop();
+        mixSoundRef.current?.play();
+
+        setTimeout(() => {
+          handleSelectRandomBoard();
+        }, 5000);
+      },
+    });
+  };
+
   return (
     <div className="random-board-container fullscreen" ref={containerRef}>
       <Particles />
@@ -222,7 +315,10 @@ const RandomBoardSelector = () => {
         <BoardCarousel onFinish={handleSelectRandomBoard} />
       ) : selectedBoard ? (
         <>
-          <BoardCard board={selectedBoard} onSelectRandom={handleButtonClick} />
+          <BoardCard
+            board={selectedBoard}
+            onSelectRandom={handleChooseAnotherBoard}
+          />
           <button
             onClick={() => handleToggleFavorite(selectedBoard.id)}
             className={`favorite-toggle ${
@@ -243,7 +339,7 @@ const RandomBoardSelector = () => {
           <div className="welcome-content-blur">
             <div className="logo-container" ref={logoBackgroundRef}>
               <img
-                src="/assets/jamboree-logo.png"
+                src="/assets/logo.png"
                 alt="Mario Party Jamboree Logo"
                 className="welcome-logo"
               />
@@ -251,24 +347,70 @@ const RandomBoardSelector = () => {
             <button
               ref={buttonRef}
               onClick={handleButtonClick}
-              className="random-button pulse-animation"
+              className="random-button pulse-animation mario-question-block"
               aria-label="Choisir un plateaux aléatoire"
               disabled={isPlaying}
               tabIndex={0}
             >
-              Choisir un plateau aléatoire
+              <div className="block-face">
+                <span className="question-mark">?</span>
+                <div
+                  className="button-highlight"
+                  ref={(el) => {
+                    if (el) {
+                      const handleMarioJump = () => {
+                        if (
+                          !buttonRef.current.classList.contains("button-hit")
+                        ) {
+                          buttonRef.current.classList.add(
+                            "button-hit",
+                            "button-bounce"
+                          );
+
+                          coinSoundRef.current?.play();
+
+                          setTimeout(() => {
+                            buttonRef.current.classList.remove(
+                              "button-hit",
+                              "button-bounce"
+                            );
+                          }, 500);
+                        }
+                      };
+
+                      const unsubscribe = useMarioStore.subscribe((state) => {
+                        if (
+                          state.isJumping &&
+                          state.jumpTarget &&
+                          Math.abs(
+                            state.playerPosition.x - state.jumpTarget.x
+                          ) < 0.5 &&
+                          state.jumpHeight > 0.5
+                        ) {
+                          handleMarioJump();
+                        }
+                      });
+
+                      return () => unsubscribe();
+                    }
+                  }}
+                ></div>
+              </div>
+              <span className="block-text">Choisir un plateau</span>
             </button>
           </div>
         </div>
       )}
 
-      <MarioScene
-        height="150px"
-        bottom="0"
-        walkBounds={{ min: -10, max: 10 }}
-        walkSpeed={2}
-        useSimpleModel={true}
-      />
+      {!isScrolling && !selectedBoard && (
+        <MarioScene
+          height="200px"
+          bottom="-20px"
+          walkBounds={{ min: -10, max: 10 }}
+          walkSpeed={3.5}
+          useSimpleModel={false}
+        />
+      )}
       <ToastContainer />
     </div>
   );

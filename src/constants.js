@@ -9,5 +9,10 @@ export const MARIO_CONSTANTS = {
     IDLE: "idle",
     WALK: "walk",
     RUN: "run",
+    JUMP: "jump",
   },
+  // Constantes pour le saut
+  JUMP_HEIGHT: 3.5,
+  JUMP_DURATION: 1.2, // secondes
+  BUTTON_POSITION: { x: 0, y: 0 }, // sera défini dynamiquement
 };

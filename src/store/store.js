@@ -16,28 +16,42 @@ export const useGameStore = create((set) => ({
     set({ lookAtCharacter: lookAtCharacter }),
 }));
 
-// Store spécifique pour la gestion de Mario 3D
 export const useMarioStore = create((set) => ({
-  // État de l'animation
   playerAnimation: MARIO_CONSTANTS.ANIMATION_STATES.WALK,
   playerPosition: { x: 0, y: 0, z: 0 },
 
-  // Direction et vitesse de marche
-  walkDirection: 1, // 1 = droite, -1 = gauche
+  walkDirection: 1,
   walkSpeed: MARIO_CONSTANTS.DEFAULT_WALK_SPEED,
   walkBounds: MARIO_CONSTANTS.WALK_BOUNDS,
 
-  // Actions pour mettre à jour l'état
+  isJumping: false,
+  jumpHeight: 0,
+  jumpTarget: null,
+
+  buttonClicked: false,
+  playerHasHitButton: false,
+
   setPlayerAnimation: (animation) => set({ playerAnimation: animation }),
   setPlayerPosition: (position) => set({ playerPosition: position }),
   setWalkDirection: (direction) => set({ walkDirection: direction }),
   setWalkSpeed: (speed) => set({ walkSpeed: speed }),
   setWalkBounds: (bounds) => set({ walkBounds: bounds }),
 
-  // Réinitialiser la position
+  setIsJumping: (jumping) => set({ isJumping: jumping }),
+  setJumpHeight: (height) => set({ jumpHeight: height }),
+  setJumpTarget: (target) => set({ jumpTarget: target }),
+
+  setButtonClicked: (clicked) => set({ buttonClicked: clicked }),
+  setPlayerHasHitButton: (hasHit) => set({ playerHasHitButton: hasHit }),
+
   resetPlayerPosition: () =>
     set({
       playerPosition: { x: 0, y: 0, z: 0 },
       walkDirection: 1,
+      isJumping: false,
+      jumpHeight: 0,
+      jumpTarget: null,
+      buttonClicked: false,
+      playerHasHitButton: false,
     }),
 }));

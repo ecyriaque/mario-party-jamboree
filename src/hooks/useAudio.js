@@ -1,37 +1,53 @@
 import { useRef, useEffect } from "react";
 import { Howl } from "howler";
 
-export default function useAudio(isMuted) {
-  const letsGoSoundRef = useRef(null);
-  const mixSoundRef = useRef(null);
-  const jamboreeThemeRef = useRef(null);
+const useAudio = (isMuted = false) => {
+  const letsGoSoundRef = useRef();
+  const mixSoundRef = useRef();
+  const jamboreeThemeRef = useRef();
+  const coinSoundRef = useRef();
 
   useEffect(() => {
+    // Sons principaux
     letsGoSoundRef.current = new Howl({
       src: ["/assets/letsgo.mp3"],
       volume: isMuted ? 0 : 1.0,
-      autoplay: false,
-      html5: true,
+      preload: true,
     });
+
     mixSoundRef.current = new Howl({
       src: ["/assets/mixSound.mp3"],
       volume: isMuted ? 0 : 1.0,
-      autoplay: false,
-      html5: true,
+      preload: true,
     });
+
     jamboreeThemeRef.current = new Howl({
       src: ["/assets/jamboree-theme.mp3"],
       volume: isMuted ? 0 : 0.5,
+      preload: true,
       loop: true,
-      autoplay: false,
-      html5: true,
     });
+
+    // Son de pièce pour le saut de Mario
+    coinSoundRef.current = new Howl({
+      src: ["/assets/coin.mp3"],
+      volume: isMuted ? 0 : 0.7,
+      preload: true,
+    });
+
+    if (!isMuted) {
+      jamboreeThemeRef.current.play();
+    }
+
     return () => {
-      letsGoSoundRef.current?.unload();
-      mixSoundRef.current?.unload();
-      jamboreeThemeRef.current?.unload();
+      letsGoSoundRef.current?.stop();
+      mixSoundRef.current?.stop();
+      jamboreeThemeRef.current?.stop();
+      coinSoundRef.current?.stop();
     };
   }, [isMuted]);
 
-  return { letsGoSoundRef, mixSoundRef, jamboreeThemeRef };
-}
+  return { letsGoSoundRef, mixSoundRef, jamboreeThemeRef, coinSoundRef };
+};
+
+export default useAudio;
