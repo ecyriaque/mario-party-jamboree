@@ -11,6 +11,7 @@ import useConfetti from "./hooks/useConfetti";
 import { boards } from "./data/board";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import WelcomeScreen from "./components/WelcomeScreen";
 
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -236,30 +237,13 @@ const RandomBoardSelector = () => {
           </button>
         </>
       ) : (
-        <div className="welcome-screen">
+        <WelcomeScreen
+          logoRef={logoBackgroundRef}
+          buttonRef={buttonRef}
+          onButtonClick={handleButtonClick}
+        >
           <Particles />
-          <div className="welcome-content-blur">
-            <div className="logo-container" ref={logoBackgroundRef}>
-              <img
-                src="/assets/logo.png"
-                alt="Mario Party Jamboree"
-                className="welcome-logo"
-              />
-            </div>
-            <h1 className="welcome-title">Mario Party Jamboree</h1>
-            <p className="welcome-baseline">
-              Choisissez un plateau aléatoire pour votre prochaine partie !
-            </p>
-            <button
-              ref={buttonRef}
-              onClick={handleButtonClick}
-              className="random-button pulse-animation"
-              aria-label="Choisir un plateau aléatoire"
-            >
-              Choisir un plateau
-            </button>
-          </div>
-        </div>
+        </WelcomeScreen>
       )}
       <ToastContainer />
     </div>

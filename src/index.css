@@ -588,7 +588,7 @@ p {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+
   transform: translateY(0);
   animation: button-float 4s ease-in-out infinite;
 }
@@ -605,7 +605,7 @@ p {
 
 .welcome-screen .random-button:hover {
   transform: scale(1.05) translateY(-5px);
-  box-shadow: 0 0 30px rgba(255, 204, 0, 0.6);
+
   background: linear-gradient(45deg, var(--button-bg-hover), var(--button-bg));
 }
 
@@ -1064,8 +1064,7 @@ button:focus {
 .welcome-content-blur {
   background: rgba(10, 10, 42, 0.7);
   border-radius: 32px;
-  box-shadow: 0 0 60px 10px rgba(255, 204, 0, 0.15),
-    0 0 0 2px rgba(255, 255, 255, 0.08);
+
   backdrop-filter: blur(12px);
   padding: 48px 32px 40px 32px;
   display: flex;
@@ -1183,5 +1182,358 @@ button:focus {
   .reset-button {
     padding: 12px 24px;
     font-size: 1rem;
+  }
+}
+
+/* Overlay festif Mario Party */
+.mario-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10000;
+}
+.mario-overlay svg {
+  z-index: 10001;
+  position: absolute;
+  pointer-events: none;
+}
+.mario-overlay .star-svg,
+.mario-overlay .coin-svg,
+.mario-overlay .mushroom-svg {
+  filter: drop-shadow(0 0 8px #ffe06688);
+  animation: float-mario 6s ease-in-out infinite alternate;
+}
+@keyframes float-mario {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-18px) scale(1.08);
+  }
+}
+
+/* Contour arc-en-ciel animé autour du logo */
+.rainbow-border {
+  padding: 8px;
+  border-radius: 40px;
+  background: linear-gradient(
+    270deg,
+    #ffcc00,
+    #ff3c00,
+    #00e0ff,
+    #00ff85,
+    #ffcc00
+  );
+  background-size: 800% 800%;
+  animation: rainbow-anim 6s ease-in-out infinite;
+  box-shadow: 0 0 40px 10px #ffe06655, 0 0 0 4px #fff8b033;
+}
+@keyframes rainbow-anim {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animation pop du titre */
+.animated-pop {
+  animation: pop-in 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) both;
+}
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15) rotate(3deg);
+  }
+  80% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* Bouton principal avec icône de dé */
+.dice-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.dice-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+  filter: drop-shadow(0 0 6px #ffcc00cc);
+  animation: dice-bounce 1.5s infinite alternate;
+}
+@keyframes dice-bounce {
+  0% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  100% {
+    transform: translateY(-6px) rotate(8deg);
+  }
+}
+
+/* Ajustement pour que l'overlay soit au-dessus du blur d'accueil */
+.welcome-content-blur {
+  position: relative;
+  z-index: 5;
+}
+.welcome-screen {
+  position: relative;
+  z-index: 1;
+}
+
+/* Animations supplémentaires pour les nouveaux éléments Mario */
+.fire-flower-svg {
+  animation: float-mario 7s ease-in-out infinite alternate,
+    flower-wiggle 2.5s infinite alternate;
+  filter: drop-shadow(0 0 10px #ff980088);
+}
+@keyframes flower-wiggle {
+  0% {
+    transform: rotate(-5deg) scale(1);
+  }
+  100% {
+    transform: rotate(7deg) scale(1.08);
+  }
+}
+
+.shell-svg {
+  animation: float-mario 8s ease-in-out infinite alternate,
+    shell-rotate 6s linear infinite;
+  filter: drop-shadow(0 0 8px #43a04788);
+}
+@keyframes shell-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.block-svg {
+  animation: float-mario 6.5s ease-in-out infinite alternate,
+    block-bounce 2s infinite alternate;
+  filter: drop-shadow(0 0 8px #ffcc0088);
+}
+@keyframes block-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}
+
+.superstar-svg {
+  animation: float-mario 7.5s ease-in-out infinite alternate,
+    superstar-glow 1.2s infinite alternate;
+  filter: drop-shadow(0 0 16px #fff700cc);
+}
+@keyframes superstar-glow {
+  0% {
+    filter: drop-shadow(0 0 8px #fff700cc);
+  }
+  100% {
+    filter: drop-shadow(0 0 24px #fff700ff);
+  }
+}
+
+.mushroom1up-svg {
+  animation: float-mario 7.2s ease-in-out infinite alternate,
+    mushroom1up-bounce 2.2s infinite alternate;
+  filter: drop-shadow(0 0 10px #43a04788);
+}
+@keyframes mushroom1up-bounce {
+  0% {
+    transform: scale(1) rotate(-4deg);
+  }
+  100% {
+    transform: scale(1.08) rotate(6deg);
+  }
+}
+
+/* Animations de déplacement pour les éléments décoratifs de l'accueil */
+.star-anim-1 {
+  position: absolute;
+  top: 5%;
+  left: 4%;
+  animation: move-star-1 12s linear infinite alternate;
+}
+@keyframes move-star-1 {
+  0% {
+    top: 5%;
+    left: 4%;
+  }
+  100% {
+    top: 80%;
+    left: 80%;
+  }
+}
+
+.coin-anim-1 {
+  position: absolute;
+  top: 7%;
+  right: 6%;
+  animation: move-coin-1 14s linear infinite alternate;
+}
+@keyframes move-coin-1 {
+  0% {
+    top: 7%;
+    right: 6%;
+  }
+  100% {
+    top: 80%;
+    right: 70%;
+  }
+}
+
+.mush-anim-1 {
+  position: absolute;
+  bottom: 6%;
+  left: 8%;
+  animation: move-mush-1 13s linear infinite alternate;
+}
+@keyframes move-mush-1 {
+  0% {
+    bottom: 6%;
+    left: 8%;
+  }
+  100% {
+    bottom: 80%;
+    left: 70%;
+  }
+}
+
+.shell-anim-1 {
+  position: absolute;
+  bottom: 8%;
+  right: 7%;
+  animation: move-shell-1 15s linear infinite alternate;
+}
+@keyframes move-shell-1 {
+  0% {
+    bottom: 8%;
+    right: 7%;
+  }
+  100% {
+    bottom: 80%;
+    right: 70%;
+  }
+}
+
+.block-anim-1 {
+  position: absolute;
+  top: 40%;
+  left: 2%;
+  animation: move-block-1 16s linear infinite alternate;
+}
+@keyframes move-block-1 {
+  0% {
+    top: 40%;
+    left: 2%;
+  }
+  100% {
+    top: 40%;
+    left: 85%;
+  }
+}
+
+.superstar-anim-1 {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: move-superstar-1 18s linear infinite alternate;
+}
+@keyframes move-superstar-1 {
+  0% {
+    top: 2%;
+  }
+  100% {
+    top: 85%;
+  }
+}
+
+.mush1up-anim-1 {
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: move-mush1up-1 17s linear infinite alternate;
+}
+@keyframes move-mush1up-1 {
+  0% {
+    bottom: 3%;
+  }
+  100% {
+    bottom: 85%;
+  }
+}
+
+.flower-anim-1 {
+  position: absolute;
+  top: 50%;
+  right: 3%;
+  animation: move-flower-1 15s linear infinite alternate;
+}
+@keyframes move-flower-1 {
+  0% {
+    top: 50%;
+    right: 3%;
+  }
+  100% {
+    top: 10%;
+    right: 80%;
+  }
+}
+
+.star-anim-2 {
+  position: absolute;
+  bottom: 10%;
+  right: 12%;
+  animation: move-star-2 13s linear infinite alternate;
+}
+@keyframes move-star-2 {
+  0% {
+    bottom: 10%;
+    right: 12%;
+  }
+  100% {
+    bottom: 80%;
+    right: 80%;
+  }
+}
+
+.coin-anim-2 {
+  position: absolute;
+  bottom: 12%;
+  left: 15%;
+  animation: move-coin-2 14s linear infinite alternate;
+}
+@keyframes move-coin-2 {
+  0% {
+    bottom: 12%;
+    left: 15%;
+  }
+  100% {
+    bottom: 80%;
+    left: 80%;
   }
 }
