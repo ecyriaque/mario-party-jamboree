@@ -106,4 +106,4 @@ src/
 
 ## 👨‍💻 Author
 
-Project by [Your Name].
+Project by Cyriaque Emilio.
