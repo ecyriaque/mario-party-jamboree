@@ -429,16 +429,40 @@ const WelcomeScreen = ({ logoRef, buttonRef, onButtonClick, children }) => (
   <div className="welcome-screen">
     {children}
     <WelcomeMarioOverlay />
-    <div className="welcome-content-blur">
-      <div className="logo-container rainbow-border" ref={logoRef}>
-        <img
-          src="/assets/logo.png"
-          alt="Mario Party Jamboree"
-          className="welcome-logo"
-        />
+    <div
+      className="welcome-content-blur"
+      style={{
+        maxHeight: "100vh",
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+      }}
+    >
+      <div
+        className="logo-container"
+        ref={logoRef}
+        style={{ maxWidth: "90%", overflow: "hidden", margin: "0 auto" }}
+      >
+        <div
+          className="rainbow-border"
+          style={{ maxWidth: "100%", overflow: "hidden" }}
+        >
+          <img
+            src="/assets/logo.png"
+            alt="Mario Party Jamboree"
+            className="welcome-logo"
+          />
+        </div>
       </div>
-      <h1 className="welcome-title animated-pop">Mario Party Jamboree</h1>
-      <p className="welcome-baseline">
+      <h1
+        className="welcome-title animated-pop"
+        style={{ textAlign: "center" }}
+      >
+        Mario Party Jamboree
+      </h1>
+      <p className="welcome-baseline" style={{ textAlign: "center" }}>
         Choisissez un plateau aléatoire pour votre prochaine partie !
       </p>
       <button
@@ -446,6 +470,13 @@ const WelcomeScreen = ({ logoRef, buttonRef, onButtonClick, children }) => (
         onClick={onButtonClick}
         className="random-button pulse-animation dice-button"
         aria-label="Choisir un plateau aléatoire"
+        style={{
+          marginBottom: "10px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          margin: "0 auto 10px auto",
+        }}
       >
         <span className="dice-icon" aria-hidden="true">
           <svg
