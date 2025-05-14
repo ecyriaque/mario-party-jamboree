@@ -9,6 +9,8 @@ import useFavorites from "./hooks/useFavorites";
 import useAudio from "./hooks/useAudio";
 import useConfetti from "./hooks/useConfetti";
 import { boards } from "./data/board";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RandomBoardSelector = () => {
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -147,6 +149,43 @@ const RandomBoardSelector = () => {
     }
   };
 
+  const handleToggleFavorite = (boardId) => {
+    toggleFavorite(boardId);
+    if (isFavorite(boardId)) {
+      toast.success("Plateau retiré des favoris !", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: "#ffcc00",
+          color: "#333",
+          borderRadius: "10px",
+          boxShadow: "0 0 10px rgba(255, 204, 0, 0.5)",
+        },
+      });
+    } else {
+      toast.success("Plateau ajouté aux favoris !", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: "#ffcc00",
+          color: "#333",
+          borderRadius: "10px",
+          boxShadow: "0 0 10px rgba(255, 204, 0, 0.5)",
+        },
+      });
+    }
+  };
+
   return (
     <div className="random-board-container fullscreen" ref={containerRef}>
       <Particles />
@@ -183,13 +222,17 @@ const RandomBoardSelector = () => {
         <>
           <BoardCard board={selectedBoard} onSelectRandom={handleButtonClick} />
           <button
-            onClick={() => toggleFavorite(selectedBoard.id)}
-            className={`favorite-toggle ${isFavorite ? "is-favorite" : ""}`}
+            onClick={() => handleToggleFavorite(selectedBoard.id)}
+            className={`favorite-toggle ${
+              isFavorite(selectedBoard.id) ? "is-favorite" : ""
+            }`}
             aria-label={
-              isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+              isFavorite(selectedBoard.id)
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
             }
           >
-            {isFavorite ? "★" : "☆"}
+            {isFavorite(selectedBoard.id) ? "★" : "☆"}
           </button>
         </>
       ) : (
@@ -198,24 +241,27 @@ const RandomBoardSelector = () => {
           <div className="welcome-content-blur">
             <div className="logo-container" ref={logoBackgroundRef}>
               <img
-                src="/assets/jamboree-logo.png"
-                alt="Mario Party Jamboree Logo"
+                src="/assets/logo.png"
+                alt="Mario Party Jamboree"
                 className="welcome-logo"
               />
             </div>
+            <h1 className="welcome-title">Mario Party Jamboree</h1>
+            <p className="welcome-baseline">
+              Choisissez un plateau aléatoire pour votre prochaine partie !
+            </p>
             <button
               ref={buttonRef}
               onClick={handleButtonClick}
               className="random-button pulse-animation"
-              aria-label="Choisir un plateaux aléatoire"
-              disabled={isPlaying}
-              tabIndex={0}
+              aria-label="Choisir un plateau aléatoire"
             >
-              Choisir un plateau aléatoire
+              Choisir un plateau
             </button>
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };
